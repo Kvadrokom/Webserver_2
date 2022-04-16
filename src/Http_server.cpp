@@ -57,7 +57,7 @@ void Http_server::accepter()
 		}
 		fcntl(new_socket, F_SETFL, O_NONBLOCK);
 		clients.insert(new_socket);
-		FD_SET(new_socket, &readset);
+		// FD_SET(new_socket, &readset);
 	}
 	for(std::set<int>::iterator it = clients.begin(); it != clients.end(); it++)
 	{
@@ -102,8 +102,9 @@ void Http_server::handler(int fd)
 		if (htmlFile == "/")
 			htmlFile = "/index.html";
 	}
+	std::string www = "www" + htmlFile;
 	// Open the document in the local file system
-	std::ifstream f("www" + htmlFile);
+	std::ifstream f(www);
 
 	// Check if it opened and if it did, grab the entire contents
 	if (f.good())
@@ -123,7 +124,7 @@ void Http_server::responder(int fd, std::string content, int errorCode)
 	response_body << content;
 
 	// Формируем весь ответ вместе с заголовками
-    response 	<< "HTTP/1.1" << errorCode << "\r\n"
+    response 	<< "HTTP/1.1 " << errorCode << "\r\n"
 				<< "Version: HTTP/1.1\r\n"
 				<< "Content-Type: text/html; charset=utf-8\r\n"
 				<< "Content-Length: " << response_body.str().length()
