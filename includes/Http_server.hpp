@@ -34,7 +34,7 @@ public:
 	Http_server(int domain, int service, int protocol, int port,
 				u_long interface, int backlog);
 	~Http_server();
-
+	void clear();
 	void launch();
 };
 

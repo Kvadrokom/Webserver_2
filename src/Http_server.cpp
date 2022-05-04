@@ -4,6 +4,7 @@ Http_server::Http_server(int domain, int service, int protocol, int port,
 			u_long interface, int backlog) : AServer(domain, service, protocol, port, interface, backlog)
 {
 	sock_sv = getsocket()->get_sock();
+	clear();
 	fcntl(sock_sv, F_SETFL, O_NONBLOCK);
 	// timeout.tv_sec = 15;
 	// timeout.tv_usec = 0;
@@ -17,6 +18,7 @@ Http_server::Http_server(int domain, int service, int protocol, int port,
 Http_server::Http_server() : AServer(AF_INET, SOCK_STREAM, 0, 8500, INADDR_ANY, 10)
 {
 	sock_sv = getsocket()->get_sock();
+	clear();
 	fcntl(sock_sv, F_SETFL, O_NONBLOCK);
 	// timeout.tv_sec = 15;
 	// timeout.tv_usec = 0;
@@ -65,7 +67,8 @@ void Http_server::accepter()
 		{
 			// Поступили данные от клиента, читаем их
 			int bytes_read = recv(*it, arr, 1024, 0);
-			if(bytes_read <= 0 && *it != sock_sv)
+			std::cout << "fd = " << *it << " , bytes = " << bytes_read << std::endl;
+			if (bytes_read <= 0 && *it != sock_sv)
 			{
 				// Соединение разорвано, удаляем сокет из множества
 				close(*it);
@@ -94,17 +97,26 @@ void Http_server::handler(int fd)
 	int errorCode = 404;
 
 	// If the GET request is valid, try and get the name
-	if (parsed.size() >= 3 && parsed[0] == "GET")
+	if (parsed.size() >= 3)
 	{
-		htmlFile = parsed[1];
-		// If the file is just a slash, use index.html. This should really
-		// be if it _ends_ in a slash. I'll leave that for you :)
-		if (htmlFile == "/")
+		if (parsed[0] == "GET")
+		{
+			htmlFile = parsed[1];
+			// If the file is just a slash, use index.html. This should really
+			// be if it _ends_ in a slash. I'll leave that for you :)
+			if (htmlFile == "/")
 			htmlFile = "/index.html";
+		}
+		else if (parsed[0] == "POST")
+		{
+			htmlFile = parsed[1];
+			if (htmlFile == "/")
+			htmlFile = "/index.html";
+		}
 	}
-	std::string www = "www" + htmlFile;
 	// Open the document in the local file system
-	std::ifstream f(www);
+	std::string www = "www" + htmlFile;
+	std::ifstream f(www.c_str());
 
 	// Check if it opened and if it did, grab the entire contents
 	if (f.good())
@@ -127,12 +139,16 @@ void Http_server::responder(int fd, std::string content, int errorCode)
     response 	<< "HTTP/1.1 " << errorCode << "\r\n"
 				<< "Version: HTTP/1.1\r\n"
 				<< "Content-Type: text/html; charset=utf-8\r\n"
+				<< "Accept-Ranges: bytes\r\n"
 				<< "Content-Length: " << response_body.str().length()
 				<< "\r\n\r\n"
 				<< response_body.str();
 	int result = send(fd, response.str().c_str(),
 	response.str().length(), 0);
-	if (result < 0) 
+	std::cout << "result = " << result << "\n";
+	std::cout << response.str().c_str() << "\n";
+	clear();
+	if (result < 0)
 	{
 		// произошла ошибка при отправле данных
 		std::cerr << "send failed: " << "\n";
@@ -140,6 +156,12 @@ void Http_server::responder(int fd, std::string content, int errorCode)
 }
 
 Http_server::~Http_server(){};
+
+void Http_server::clear()
+{
+	for (size_t i = 0; i < 1024; i++)
+		arr[i] = '\0';
+}
 
 // <!DOCTYPE html>
 // <html>
