@@ -2,28 +2,31 @@
 #define PARSER_H
 
 #include "Http_server.hpp"
-
-struct server_param
-{
-	int							port;
-	std::vector<std::string>	location;
-};
+#include "LocationData.hpp"
+#include "ServerParam.hpp"
 
 class Parser_conf
 {
-private:
-	server_param*				servers;
+	ServerParam*				servers;
 	std::vector<std::string>	pars;
+	size_t						loc_size;
+	size_t						serv_size;
+	LocationData*				loc;
+	
 
-public:
-	Parser_conf(const char *conf);
-	void parser_config();
-	void parser_server();
-	void parser_location(int i, server_param* servers);
+	public:
+		Parser_conf(const char *conf);
+		~Parser_conf();
 
-	server_param* getServers();
-	~Parser_conf();
+		// void parser_config();
+		void parser_server();
+		void parser_location();
+
+		size_t 			get_locsize();
+		ServerParam 	*getServers();
+		size_t 			get_servsize();
+		LocationData *	get_loc();
+
 };
-
 
 #endif

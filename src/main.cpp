@@ -2,10 +2,33 @@
 #include "BindingSocket.hpp"
 #include "ListeningSocket.hpp"
 #include "Http_server.hpp"
+#include "Parser_conf.hpp"
 
 int	main()
 {
-	Http_server server(AF_INET, SOCK_STREAM, 0, 8500, INADDR_ANY, 10);
+	Parser_conf conf("config.conf");
+	for (size_t i = 0; i < conf.get_servsize(); i++)
+	{
+		std::cout << conf.getServers()[i].getPort() << "\n";
+		for (size_t j = 0; j < conf.getServers()[i].getLocation().size(); j++)
+		{
+			std::cout << conf.getServers()[i].getLocation()[j].getMethod() << " ";
+			std::cout << conf.getServers()[i].getLocation()[j].getPath() << " ";
+			std::cout << conf.getServers()[i].getLocation()[j].getRoot() << " ";
+		}
+		std::cout << "\n";
+	}
+	// for (size_t i = 0; i < conf.get_servsize(); i++)
+	// 	std::cout << conf.getServers()[i].getPort() << " ";
+	// for (size_t i = 0; i < conf.get_locsize(); i++)
+	// {
+	// 	std::cout << conf.get_loc()[i].getMethod() << " ";
+	// 	std::cout << conf.get_loc()[i].getPath() << " ";
+	// 	std::cout << conf.get_loc()[i].getRoot() << "\n";
+	// }
+
+	Http_server server1(AF_INET, SOCK_STREAM, 0, 8000, INADDR_ANY, 10);
+	// Http_server server2(AF_INET, SOCK_STREAM, 0, 8500, INADDR_ANY, 10);
 	return 0;
 }
 
