@@ -27,8 +27,16 @@ int	main()
 	// 	std::cout << conf.get_loc()[i].getRoot() << "\n";
 	// }
 
-	Http_server server1(AF_INET, SOCK_STREAM, 0, 8000, INADDR_ANY, 10);
-	// Http_server server2(AF_INET, SOCK_STREAM, 0, 8500, INADDR_ANY, 10);
+
+	// Http_server *servs = new Http_server[conf.get_servsize()];
+	// for (size_t i = 0; i < conf.get_servsize(); i++)
+	// {
+	// 	servs[i] = 
+	// }
+	
+	Http_server server;
+	server.setServ(conf);
+	server.launch();
 	return 0;
 }
 

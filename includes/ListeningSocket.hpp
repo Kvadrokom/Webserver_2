@@ -3,15 +3,16 @@
 
 #include "BindingSocket.hpp"
 
-class ListeningSocket: public BindingSocket
+class ListeningSocket: public ASocket
 {
 private:
 	int backlog;
 	int listening;
+	int res;
 
 public:
-	ListeningSocket(int domain, int service, int protocol, int port,
-				u_long interface, int backlog_);
+	ListeningSocket(int port, int backlog_);
+	ListeningSocket();
 	void	start_listening();
 	~ListeningSocket();
 };

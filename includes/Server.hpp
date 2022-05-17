@@ -24,8 +24,8 @@ private:
 
 public:
 	bool	make_nonblocking(int sock);
-	int getSock() const;
-	int setup();
+	int 	getSock() const;
+	int 	setup();
 	Server(int port);
 	~Server();
 };

@@ -1,7 +1,6 @@
 #include "BindingSocket.hpp"
 
-BindingSocket::BindingSocket(int domain, int service, int protocol, int port,
-	u_long interface): ASocket(domain, service, protocol, port, interface)
+BindingSocket::BindingSocket(int port): ASocket(port)
 {
 	int yes = 1;
 	setsockopt(get_sock(), SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int));

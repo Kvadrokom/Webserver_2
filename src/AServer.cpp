@@ -1,10 +1,8 @@
 #include "AServer.hpp"
 
-AServer::AServer(int domain, int service, int protocol, int port,
-				u_long interface, int backlog)
+AServer::AServer(int port, int backlog)
 {
-	listen_socket = new ListeningSocket(domain, service, protocol, port,
-								  interface, backlog);
+	listen_socket = new ListeningSocket(port, backlog);
 }
 
 ListeningSocket* AServer::getsocket() { return listen_socket; }

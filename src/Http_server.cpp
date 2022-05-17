@@ -1,48 +1,101 @@
 #include "Http_server.hpp"
 
-Http_server::Http_server(int domain, int service, int protocol, int port,
-			u_long interface, int backlog) : AServer(domain, service, protocol, port, interface, backlog)
+int	Http_server::setServ(Parser_conf &conf)
 {
-	sock_sv = getsocket()->get_sock();
+	for (size_t i = 0; i < conf.get_servsize(); i++)
+	{
+		Server *serv = new Server(conf.getServers()[i].getPort());
+		if (serv->setup() && serv->make_nonblocking(serv->getSock()))
+		{
+			FD_SET(serv->getSock(), &masterset);
+			if (mx < serv->getSock())
+				mx = serv->getSock();
+			servers.insert(std::make_pair(serv->getSock(), *conf.getServers()));
+		}
+		else
+			return 0;
+	}
+	return 1;
+}
+
+Http_server::Http_server(): mx(0)
+{	
 	clear();
-	fcntl(sock_sv, F_SETFL, O_NONBLOCK);
+	FD_ZERO(&masterset);
+	FD_ZERO(&readset);
+	FD_ZERO(&writeset);
+	// fcntl(sock_sv, F_SETFL, O_NONBLOCK);
 	// timeout.tv_sec = 15;
 	// timeout.tv_usec = 0;
 	clients.clear();
-	FD_ZERO(&readset);
-	clients.insert(sock_sv);
-	mx = sock_sv;
-	launch();
+	// FD_ZERO(&readset);
+	// clients.insert(sock_sv);
+	// mx = sock_sv;
+	// launch();
 }
 
-Http_server::Http_server() : AServer(AF_INET, SOCK_STREAM, 0, 8500, INADDR_ANY, 10)
-{
-	sock_sv = getsocket()->get_sock();
-	clear();
-	fcntl(sock_sv, F_SETFL, O_NONBLOCK);
-	// timeout.tv_sec = 15;
-	// timeout.tv_usec = 0;
-	FD_ZERO(&readset);
-	clients.insert(sock_sv);
-	mx = sock_sv;
-	launch();
-};
 
 void Http_server::launch()
 {
 	while (true)
 	{
 		std::cout << "===========Waiting==========\n";
-		for(std::set<int>::iterator it = clients.begin(); it != clients.end(); it++)
-			FD_SET(*it, &readset);
-		mx = std::max(mx, *std::max_element(clients.begin(), clients.end()));
-		if(select(mx + 1, &readset, NULL, NULL, NULL) <= 0)
+		readset = masterset;
+		if (select(mx + 1, &readset, &writeset, NULL, NULL) <= 0)
+			continue;
+		std::map<int, ServerParam>::iterator it = servers.begin();
+		for (; it != servers.end(); ++it)
 		{
-			perror("select");
-			exit(3);
+			if(FD_ISSET(it->first, &readset))
+			{
+				// Поступил новый запрос на соединение, используем accept
+				new_socket = accept(it->first, NULL, NULL);
+				if (new_socket < 0)
+				{
+					perror("accept");
+					return;
+				}
+				if (new_socket > mx)
+					mx = new_socket;
+				fcntl(new_socket, F_SETFL, O_NONBLOCK);
+				clients.insert(new_socket);
+				FD_SET(new_socket, &masterset);
+			}
 		}
-		accepter();
+		for(std::set<int>::iterator it = clients.begin(); it != clients.end(); it++)
+		{
+			if(FD_ISSET(*it, &readset))
+			{
+				// Поступили данные от клиента, читаем их
+				int bytes_read = recv(*it, arr, 1024, 0);
+				std::cout << "fd = " << *it << " , bytes = " << bytes_read << std::endl;
+				if (bytes_read <= 0 && *it != sock_sv)
+				{
+					// Соединение разорвано, удаляем сокет из множества
+					close(*it);
+					clients.erase(*it);
+					FD_CLR(*it, &readset);
+					continue;
+				}
+				if (*it != sock_sv)
+				{
+					handler(*it);
+					// responder(*it);
+				}
+			}
+		}
+		
+		// for(std::set<int>::iterator it = clients.begin(); it != clients.end(); it++)
+		// 	FD_SET(*it, &readset);
+		// mx = std::max(mx, *std::max_element(clients.begin(), clients.end()));
+		// if(select(mx + 1, &readset, NULL, NULL, NULL) <= 0)
+		// {
+		// 	perror("select");
+		// 	continue;;
+		// }
+		// accepter();
 		std::cout << "============Done============\n\n";
+		
 	}
 }
 
@@ -55,7 +108,7 @@ void Http_server::accepter()
 		if(new_socket < 0)
 		{
 			perror("accept");
-			exit(3);
+			return;
 		}
 		fcntl(new_socket, F_SETFL, O_NONBLOCK);
 		clients.insert(new_socket);

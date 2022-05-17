@@ -16,7 +16,7 @@ class ServerParam
 
 		std::vector<LocationData> &getLocation();
 		void setPort(int port);
-		int getPort();
+		int getPort() const;
 };
 
 #endif

@@ -9,8 +9,7 @@ private:
 	int		connection;
 
 public:
-	BindingSocket(int domain, int service, int protocol, int port,
-				u_long interface);
+	BindingSocket(int port);
 	~BindingSocket();
 	BindingSocket();
 

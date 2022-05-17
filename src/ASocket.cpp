@@ -1,26 +1,27 @@
 #include "ASocket.hpp"
 
-ASocket::ASocket(int domain, int service, int protocol, int port, u_long interface)
+ASocket::ASocket(int port)
 {
-	address.sin_family = domain;
+	address.sin_family = AF_INET;
 	address.sin_port = htons(port);
-	address.sin_addr.s_addr = htonl(interface);
-	sock = socket(domain, service, protocol);
+	address.sin_addr.s_addr = htonl(INADDR_ANY);
+	sock = socket(AF_INET, SOCK_STREAM, 0);
 	test_connection(sock);
 }
 
 ASocket::ASocket(){};
 
-void	ASocket::test_connection(int item_to_test)
+int	ASocket::test_connection(int item_to_test)
 {
 	if (item_to_test < 0)
 	{
 		perror("Failed to connect...");
-		exit(EXIT_FAILURE);
+		return (0);
 	}
+	return (1);
 }
 
-struct sockaddr_in 	ASocket::get_address(){return address;}
+struct sockaddr_in& 	ASocket::get_address(){return address;}
 
 int	ASocket::get_sock(){return sock;}
 
