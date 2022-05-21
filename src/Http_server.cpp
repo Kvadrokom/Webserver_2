@@ -5,7 +5,7 @@ int	Http_server::setServ(Parser_conf &conf)
 	for (size_t i = 0; i < conf.get_servsize(); i++)
 	{
 		Server *serv = new Server(conf.getServers()[i].getPort());
-		if (serv->setup() && serv->make_nonblocking(serv->getSock()))
+		if (serv->setup(backlog) && serv->make_nonblocking(serv->getSock()))
 		{
 			FD_SET(serv->getSock(), &masterset);
 			if (mx < serv->getSock())
@@ -18,20 +18,13 @@ int	Http_server::setServ(Parser_conf &conf)
 	return 1;
 }
 
-Http_server::Http_server(): mx(0)
+Http_server::Http_server(int backlog): mx(0), backlog(backlog)
 {	
 	clear();
 	FD_ZERO(&masterset);
 	FD_ZERO(&readset);
 	FD_ZERO(&writeset);
-	// fcntl(sock_sv, F_SETFL, O_NONBLOCK);
-	// timeout.tv_sec = 15;
-	// timeout.tv_usec = 0;
 	clients.clear();
-	// FD_ZERO(&readset);
-	// clients.insert(sock_sv);
-	// mx = sock_sv;
-	// launch();
 }
 
 
@@ -58,83 +51,29 @@ void Http_server::launch()
 				if (new_socket > mx)
 					mx = new_socket;
 				fcntl(new_socket, F_SETFL, O_NONBLOCK);
-				clients.insert(new_socket);
+				clients.insert(Client(it->first, new_socket, CLIENT_RECEIVE_REQUEST));
 				FD_SET(new_socket, &masterset);
 			}
 		}
-		for(std::set<int>::iterator it = clients.begin(); it != clients.end(); it++)
+		for(std::set<Client>::iterator it = clients.begin(); it != clients.end(); it++)
 		{
-			if(FD_ISSET(*it, &readset))
+			if(FD_ISSET(it->fd, &readset))
 			{
 				// Поступили данные от клиента, читаем их
-				int bytes_read = recv(*it, arr, 1024, 0);
-				std::cout << "fd = " << *it << " , bytes = " << bytes_read << std::endl;
-				if (bytes_read <= 0 && *it != sock_sv)
+				int bytes_read = recv(it->fd, arr, 1024, 0);
+				std::cout << "fd = " << it->fd << " , bytes = " << bytes_read << std::endl;
+				if (bytes_read <= 0)
 				{
 					// Соединение разорвано, удаляем сокет из множества
-					close(*it);
+					close(it->fd);
 					clients.erase(*it);
-					FD_CLR(*it, &readset);
+					FD_CLR(it->fd, &readset);
 					continue;
 				}
-				if (*it != sock_sv)
-				{
-					handler(*it);
-					// responder(*it);
-				}
+				handler(it->fd);
 			}
 		}
-		
-		// for(std::set<int>::iterator it = clients.begin(); it != clients.end(); it++)
-		// 	FD_SET(*it, &readset);
-		// mx = std::max(mx, *std::max_element(clients.begin(), clients.end()));
-		// if(select(mx + 1, &readset, NULL, NULL, NULL) <= 0)
-		// {
-		// 	perror("select");
-		// 	continue;;
-		// }
-		// accepter();
 		std::cout << "============Done============\n\n";
-		
-	}
-}
-
-void Http_server::accepter()
-{
-	if(FD_ISSET(sock_sv, &readset))
-	{
-		// Поступил новый запрос на соединение, используем accept
-		new_socket = accept(sock_sv, NULL, NULL);
-		if(new_socket < 0)
-		{
-			perror("accept");
-			return;
-		}
-		fcntl(new_socket, F_SETFL, O_NONBLOCK);
-		clients.insert(new_socket);
-		// FD_SET(new_socket, &readset);
-	}
-	for(std::set<int>::iterator it = clients.begin(); it != clients.end(); it++)
-	{
-		if(FD_ISSET(*it, &readset))
-		{
-			// Поступили данные от клиента, читаем их
-			int bytes_read = recv(*it, arr, 1024, 0);
-			std::cout << "fd = " << *it << " , bytes = " << bytes_read << std::endl;
-			if (bytes_read <= 0 && *it != sock_sv)
-			{
-				// Соединение разорвано, удаляем сокет из множества
-				close(*it);
-				clients.erase(*it);
-				FD_CLR(*it, &readset);
-				continue;
-			}
-			if (*it != sock_sv)
-			{
-				handler(*it);
-				// responder(*it);
-			}
-		}
 	}
 }
 
@@ -155,8 +94,6 @@ void Http_server::handler(int fd)
 		if (parsed[0] == "GET")
 		{
 			htmlFile = parsed[1];
-			// If the file is just a slash, use index.html. This should really
-			// be if it _ends_ in a slash. I'll leave that for you :)
 			if (htmlFile == "/")
 			htmlFile = "/index.html";
 		}
@@ -164,7 +101,7 @@ void Http_server::handler(int fd)
 		{
 			htmlFile = parsed[1];
 			if (htmlFile == "/")
-			htmlFile = "/index.html";
+				htmlFile = "/index.html";
 		}
 	}
 	// Open the document in the local file system

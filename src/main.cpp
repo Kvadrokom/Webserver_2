@@ -1,6 +1,3 @@
-#include "ASocket.hpp"
-#include "BindingSocket.hpp"
-#include "ListeningSocket.hpp"
 #include "Http_server.hpp"
 #include "Parser_conf.hpp"
 
@@ -34,7 +31,7 @@ int	main()
 	// 	servs[i] = 
 	// }
 	
-	Http_server server;
+	Http_server server(10);
 	server.setServ(conf);
 	server.launch();
 	return 0;

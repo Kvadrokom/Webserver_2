@@ -16,7 +16,7 @@ Server::Server(int port)
 	this->port = port;
 }
 
-int	Server::setup()
+int	Server::setup(int backlog)
 {
 	address.sin_family = AF_INET;
 	address.sin_port = htons(port);
@@ -28,6 +28,8 @@ int	Server::setup()
 		return 0;
 	int res = bind(sock, (sockaddr *)&address, sizeof address);
 	if (res < 0)
+		return 0;
+	if (listen(sock, backlog) < 0)
 		return 0;
 	return 1;
 }
