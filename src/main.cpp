@@ -31,7 +31,7 @@ int	main()
 	// 	servs[i] = 
 	// }
 	
-	Http_server server(10);
+	Http_server server(10, conf);
 	server.setServ(conf);
 	server.launch();
 	return 0;

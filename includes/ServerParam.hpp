@@ -1,7 +1,17 @@
 #ifndef SERVERPARAM_H
 #define SERVERPARAM_H
 
-#include "Http_server.hpp"
+#include <vector>
+#include <iostream>
+#include <string>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <set>
+#include "Client.hpp"
+#include <fstream>
+#include <sstream>
+#include <fcntl.h>
 #include "LocationData.hpp"
 
 class ServerParam

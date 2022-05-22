@@ -5,12 +5,12 @@ int	Http_server::setServ(Parser_conf &conf)
 	for (size_t i = 0; i < conf.get_servsize(); i++)
 	{
 		Server *serv = new Server(conf.getServers()[i].getPort());
-		if (serv->setup(backlog) && serv->make_nonblocking(serv->getSock()))
+		if (serv->setup(backlog))
 		{
 			FD_SET(serv->getSock(), &masterset);
 			if (mx < serv->getSock())
 				mx = serv->getSock();
-			servers.insert(std::make_pair(serv->getSock(), *conf.getServers()));
+			servers.insert(std::make_pair(serv->getSock(), conf.getServers()[i]));
 		}
 		else
 			return 0;
@@ -18,7 +18,7 @@ int	Http_server::setServ(Parser_conf &conf)
 	return 1;
 }
 
-Http_server::Http_server(int backlog): mx(0), backlog(backlog)
+Http_server::Http_server(int backlog, const Parser_conf& conf): mx(0), backlog(backlog), conf(conf)
 {	
 	clear();
 	FD_ZERO(&masterset);
@@ -79,6 +79,25 @@ void Http_server::launch()
 
 void Http_server::handler(int fd)
 {
+	ServerParam src;
+	// std::string www;
+
+	for (std::set<Client>::iterator itcl = clients.begin(); itcl != clients.end(); itcl++)
+	{
+		if (fd == itcl->fd)
+		{
+			std::map<int, ServerParam>::iterator itsv = servers.begin();
+			for (; itsv != servers.end(); ++itsv)
+			{
+				if (itcl->sock == itsv->first)
+				{
+					src = itsv->second;
+					break;
+				}
+			}
+		}	
+	}
+	
 	std::cout << arr << "\n";
 	std::istringstream iss(arr);
 	std::vector<std::string> parsed((std::istream_iterator<std::string>(iss)),
@@ -88,14 +107,18 @@ void Http_server::handler(int fd)
 	std::string htmlFile = "/index.html";
 	int errorCode = 404;
 
+
 	// If the GET request is valid, try and get the name
 	if (parsed.size() >= 3)
 	{
 		if (parsed[0] == "GET")
 		{
 			htmlFile = parsed[1];
-			if (htmlFile == "/")
-			htmlFile = "/index.html";
+			for (size_t i = 0; i < src.getLocation().size(); i++)
+			{
+				if (htmlFile == src.getLocation()[i].getPath())
+					htmlFile = src.getLocation()[i].getPath() + "/index.html";
+			}	
 		}
 		else if (parsed[0] == "POST")
 		{

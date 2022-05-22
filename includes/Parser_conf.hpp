@@ -1,11 +1,9 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-class ServerParam;
-class LocationData;
+
 #include "LocationData.hpp"
 #include "ServerParam.hpp"
-// #include "Http_server.hpp"
 
 class Parser_conf
 {
