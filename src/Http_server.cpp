@@ -34,7 +34,9 @@ void Http_server::launch()
 	{
 		std::cout << "===========Waiting==========\n";
 		readset = masterset;
-		if (select(mx + 1, &readset, &writeset, NULL, NULL) <= 0)
+		int res = select(mx + 1, &readset, &writeset, NULL, NULL);
+		std::cout << "-------------------Select-----------------" << std::endl;
+		if (res < 0)
 			continue;
 		std::map<int, ServerParam>::iterator it = servers.begin();
 		for (; it != servers.end(); ++it)
@@ -67,7 +69,9 @@ void Http_server::launch()
 					// Соединение разорвано, удаляем сокет из множества
 					close(it->fd);
 					clients.erase(*it);
-					FD_CLR(it->fd, &readset);
+					std::cout << "Hey\n";
+					// FD_CLR(it->fd, &readset);
+					FD_CLR(it->fd, &masterset);
 					continue;
 				}
 				handler(it->fd);
@@ -80,6 +84,7 @@ void Http_server::launch()
 void Http_server::handler(int fd)
 {
 	ServerParam src;
+	int flag = 0;
 	// std::string www;
 
 	for (std::set<Client>::iterator itcl = clients.begin(); itcl != clients.end(); itcl++)
@@ -117,7 +122,11 @@ void Http_server::handler(int fd)
 			for (size_t i = 0; i < src.getLocation().size(); i++)
 			{
 				if (htmlFile == src.getLocation()[i].getPath())
+				{
 					htmlFile = src.getLocation()[i].getPath() + "/index.html";
+					flag = 1;
+					break;
+				}
 			}	
 		}
 		else if (parsed[0] == "POST")
@@ -132,7 +141,7 @@ void Http_server::handler(int fd)
 	std::ifstream f(www.c_str());
 
 	// Check if it opened and if it did, grab the entire contents
-	if (f.good())
+	if (f.good() && flag)
 	{
 		std::string str((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
 		content = str;
