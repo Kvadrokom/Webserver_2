@@ -27,7 +27,6 @@ Http_server::Http_server(int backlog, const Parser_conf& conf): mx(0), backlog(b
 	clients.clear();
 }
 
-
 void Http_server::launch()
 {
 	while (true)
@@ -101,8 +100,7 @@ void Http_server::handler(int fd)
 				}
 			}
 		}	
-	}
-	
+	}	
 	std::cout << arr << "\n";
 	std::istringstream iss(arr);
 	std::vector<std::string> parsed((std::istream_iterator<std::string>(iss)),
@@ -111,8 +109,7 @@ void Http_server::handler(int fd)
 	std::string content = "<h1>404 Not Found</h1>";
 	std::string htmlFile = "/index.html";
 	int errorCode = 404;
-
-
+	
 	// If the GET request is valid, try and get the name
 	if (parsed.size() >= 3)
 	{
@@ -123,7 +120,10 @@ void Http_server::handler(int fd)
 			{
 				if (htmlFile == src.getLocation()[i].getPath())
 				{
-					htmlFile = src.getLocation()[i].getPath() + "/index.html";
+					if (htmlFile == "/")
+						htmlFile = "/index.html";
+					else
+						htmlFile = src.getLocation()[i].getPath() + "/index.html";
 					flag = 1;
 					break;
 				}
@@ -141,7 +141,7 @@ void Http_server::handler(int fd)
 	std::ifstream f(www.c_str());
 
 	// Check if it opened and if it did, grab the entire contents
-	if (f.good() && flag)
+	if ((f.good() && flag )|| htmlFile == "/my_foto.jpg")
 	{
 		std::string str((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
 		content = str;
