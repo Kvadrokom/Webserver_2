@@ -68,8 +68,6 @@ void Http_server::launch()
 					// Соединение разорвано, удаляем сокет из множества
 					close(it->fd);
 					clients.erase(*it);
-					std::cout << "Hey\n";
-					// FD_CLR(it->fd, &readset);
 					FD_CLR(it->fd, &masterset);
 					continue;
 				}
