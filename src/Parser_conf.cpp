@@ -27,15 +27,6 @@ Parser_conf::Parser_conf(const char* conf):servers(0), pars(), loc_size(0), serv
 Parser_conf::Parser_conf(): servers(0), pars(), loc_size(0), serv_size(0),
 											loc(NULL){};
 
-// void	Parser_conf::parser_config()
-// {
-// 	for (size_t i = 0; i < pars.size(); i++)
-// 	{
-// 		if (pars[i] == "server")
-// 			parser_server(i);
-// 	}	
-// }
-
 void	Parser_conf::parser_server()
 {
 	int j = 0;

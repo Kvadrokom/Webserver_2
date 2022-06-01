@@ -52,11 +52,11 @@ void Http_server::launch()
 				if (new_socket > mx)
 					mx = new_socket;
 				fcntl(new_socket, F_SETFL, O_NONBLOCK);
-				clients.insert(Client(it->first, new_socket, CLIENT_RECEIVE_REQUEST));
+				clients.push_back(Client(it->first, new_socket, CLIENT_RECEIVE_REQUEST));
 				FD_SET(new_socket, &masterset);
 			}
 		}
-		for(std::set<Client>::iterator it = clients.begin(); it != clients.end(); it++)
+		for(std::list<Client>::iterator it = clients.begin(); it != clients.end(); it++)
 		{
 			if(FD_ISSET(it->fd, &readset))
 			{
@@ -67,10 +67,11 @@ void Http_server::launch()
 				{
 					// Соединение разорвано, удаляем сокет из множества
 					close(it->fd);
-					clients.erase(*it);
+					clients.erase(it);
 					FD_CLR(it->fd, &masterset);
 					continue;
 				}
+				it->state = CLIENT_RECEIVE_REQUEST;
 				handler(it->fd);
 			}
 		}
@@ -84,7 +85,7 @@ void Http_server::handler(int fd)
 	int flag = 0;
 	// std::string www;
 
-	for (std::set<Client>::iterator itcl = clients.begin(); itcl != clients.end(); itcl++)
+	for (std::list<Client>::iterator itcl = clients.begin(); itcl != clients.end(); itcl++)
 	{
 		if (fd == itcl->fd)
 		{

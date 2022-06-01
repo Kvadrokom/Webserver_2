@@ -2,6 +2,7 @@
 #define HSERVER_H
 
 #include <map>
+#include <list>
 #include "Server.hpp"
 #include "Parser_conf.hpp"
 #include "LocationData.hpp"
@@ -12,7 +13,7 @@ class Http_server
 private:
 	char						arr[1024];
 	int							new_socket;
-	std::set<Client> 			clients;
+	std::list<Client> 			clients;
 	std::map<int, ServerParam> 	servers;
 	fd_set 						readset;
 	fd_set 						writeset;
