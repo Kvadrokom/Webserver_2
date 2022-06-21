@@ -17,7 +17,7 @@ SRCDIR	=	src
 # SRC :=  main_ft.cpp
 SRC :=  main.cpp  Http_server.cpp\
 		Parser_conf.cpp ServerParam.cpp LocationData.cpp Server.cpp\
-		Request.cpp #Select.cpp
+		Request.cpp Client.cpp
 
 
 SRC		:=	$(addprefix $(SRCDIR)/, $(SRC))

@@ -1,21 +1,26 @@
 #include "Http_server.hpp"
+#include "Request.hpp"
+#include "Responce.hpp"
 
 int	Http_server::setServ(Parser_conf &conf)
 {
-	for (size_t i = 0; i < conf.get_servsize(); i++)
+	if (conf.get_servsize())
 	{
-		Server *serv = new Server(conf.getServers()[i].getPort());
-		if (serv->setup(backlog))
+		for (size_t i = 0; i < conf.get_servsize(); i++)
 		{
-			FD_SET(serv->getSock(), &masterset);
-			if (mx < serv->getSock())
-				mx = serv->getSock();
-			servers.insert(std::make_pair(serv->getSock(), conf.getServers()[i]));
+			Server *serv = new Server(conf.getServers()[i].getPort());
+			server_pull.push_back(serv);
+			if (serv->setup(backlog))
+			{
+				FD_SET(serv->getSock(), &masterset);
+				if (mx < serv->getSock())
+					mx = serv->getSock();
+				servers.insert(std::make_pair(serv->getSock(), conf.getServers()[i]));
+			}
 		}
-		else
-			return 0;
+		return 1;
 	}
-	return 1;
+	return 0;		
 }
 
 Http_server::Http_server(int backlog, const Parser_conf& conf): mx(0), backlog(backlog), conf(conf)
@@ -40,7 +45,7 @@ void Http_server::launch()
 		std::map<int, ServerParam>::iterator it = servers.begin();
 		for (; it != servers.end(); ++it)
 		{
-			if(FD_ISSET(it->first, &readset))
+			if (FD_ISSET(it->first, &readset))
 			{
 				// Поступил новый запрос на соединение, используем accept
 				new_socket = accept(it->first, NULL, NULL);
@@ -61,7 +66,7 @@ void Http_server::launch()
 			if(FD_ISSET(it->fd, &readset))
 			{
 				// Поступили данные от клиента, читаем их
-				int bytes_read = recv(it->fd, arr, 1024, 0);
+				int bytes_read = recv(it->fd, it->accept, 1024, 0);
 				std::cout << "fd = " << it->fd << " , bytes = " << bytes_read << std::endl;
 				if (bytes_read <= 0)
 				{
@@ -71,8 +76,22 @@ void Http_server::launch()
 					FD_CLR(it->fd, &masterset);
 					continue;
 				}
-				it->state = CLIENT_RECEIVE_REQUEST;
-				handler(it->fd);
+				it->state = CLIENT_START;
+				Request req(*it);
+				if (it->state == CLIENT_RECEIVE_REQUEST)
+					FD_SET(it->sock, &writeset);
+				// handler(it->fd);
+			}
+			if(FD_ISSET(it->fd, &writeset))
+			{
+				it->state = CLIENT_SEND_DATA;
+				Responce answer(*it);
+				if (it->state == CLIENT_TERMINATED)
+				{
+					close(it->fd);
+					clients.erase(it);
+					FD_CLR(it->fd, &masterset);
+				}
 			}
 		}
 		std::cout << "============Done============\n\n";
@@ -176,37 +195,16 @@ void Http_server::responder(int fd, std::string content, int errorCode)
 	}
 }
 
-Http_server::~Http_server(){};
+Http_server::~Http_server()
+{
+	for (size_t i = 0; i < server_pull.size(); i++)
+	{
+		delete server_pull[i];
+	}
+}
 
 void Http_server::clear()
 {
 	for (size_t i = 0; i < 1024; i++)
 		arr[i] = '\0';
 }
-
-// <!DOCTYPE html>
-// <html>
-//  <head>
-//   <meta charset="utf-8">
-//   <title>ООО Василий Пупкин</title>
-//  </head>
-//  <body>
-//   <h1>Информация о нашей компании</h1>
-// 	<center><img src="we.jpg" width="30%" /></center>
-//     <h2>Кто мы?</h2>
-// 	<p>Мы - комманда профессионалов.</p>
-//     <h2>Наши услуги</h2>
-// 	<h3>Создание сайтов</h3>
-// 	  <p>Мы создаем по-настоящему крутые сайты.</p>
-// 	<h3>Продвижение сайтов</h3>
-// 	  <p>Ваш сайт в ТОП-3 поисковых систем через 2 дня.</p>
-// 	<h3>Посадка картошки</h3>
-// 	  <p>20 соток в час.</p>
-//      <h2>Контакты</h2>
-// 	<div id="map">Карта проезда: 
-// 	   ...	
-// 	</div>
-// 	<p>Телефон: 0000</p>
-//  </body>
-// </html>
-// Основ

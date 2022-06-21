@@ -21,6 +21,7 @@ private:
 	int							mx;
 	int							backlog;
 	Parser_conf					conf;
+	std::vector<Server *>		server_pull;
 	// timeval 					timeout;
 
 	void handler(int fd);

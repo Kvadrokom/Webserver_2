@@ -11,8 +11,8 @@
 enum ClientState 
 {
 	CLIENT_DEFAULT,
+	CLIENT_START,
 	CLIENT_RECEIVE_REQUEST,
-	CLIENT_SEND_FILE,
 	CLIENT_SEND_DATA,
 	CLIENT_TERMINATED
 };
@@ -20,11 +20,14 @@ enum ClientState
 struct Client 
 {
 	int 		sock;
+	char		accept[1024];
+	char		sendto[1024];
 	int 		fd;
 	ClientState state;
-	Client():sock(-1), fd(-1), state(CLIENT_DEFAULT){};
-	Client(int sock, int fd, ClientState state) : sock(sock), fd(fd), state(state){};
-	bool operator < (const Client c) const { return fd < c.fd; }
+	Client();
+	Client(int sock, int fd, ClientState state);
+	bool operator<(const Client c) const;
+	void init();
 };
 
 #endif

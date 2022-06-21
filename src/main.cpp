@@ -15,25 +15,10 @@ int	main()
 		}
 		std::cout << "\n";
 	}
-	// for (size_t i = 0; i < conf.get_servsize(); i++)
-	// 	std::cout << conf.getServers()[i].getPort() << " ";
-	// for (size_t i = 0; i < conf.get_locsize(); i++)
-	// {
-	// 	std::cout << conf.get_loc()[i].getMethod() << " ";
-	// 	std::cout << conf.get_loc()[i].getPath() << " ";
-	// 	std::cout << conf.get_loc()[i].getRoot() << "\n";
-	// }
-
-
-	// Http_server *servs = new Http_server[conf.get_servsize()];
-	// for (size_t i = 0; i < conf.get_servsize(); i++)
-	// {
-	// 	servs[i] = 
-	// }
 	
 	Http_server server(10, conf);
-	server.setServ(conf);
-	server.launch();
+	if (server.setServ(conf))
+		server.launch();
 	return 0;
 }
 

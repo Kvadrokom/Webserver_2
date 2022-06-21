@@ -35,3 +35,5 @@ int	Server::setup(int backlog)
 }
 
 int Server::getSock() const { return sock; }
+
+Server::~Server(){};
