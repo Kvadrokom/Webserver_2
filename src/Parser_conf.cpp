@@ -24,6 +24,9 @@ Parser_conf::Parser_conf(const char* conf):servers(0), pars(), loc_size(0), serv
 	}
 }
 
+Parser_conf::Parser_conf(): servers(0), pars(), loc_size(0), serv_size(0),
+											loc(NULL){};
+
 // void	Parser_conf::parser_config()
 // {
 // 	for (size_t i = 0; i < pars.size(); i++)
@@ -36,7 +39,7 @@ Parser_conf::Parser_conf(const char* conf):servers(0), pars(), loc_size(0), serv
 void	Parser_conf::parser_server()
 {
 	int j = 0;
-	size_t count = 0;
+	// size_t count = 0;
 	size_t k = 0;
 
 	if (servers)
@@ -45,27 +48,16 @@ void	Parser_conf::parser_server()
 		{
 			if (pars[i] == "listen")
 			{
-				servers[j++].setPort(atoi(pars[i + 1].c_str()));				
+				servers[j++].setPort(atoi(pars[i + 1].c_str()));
 			}
 		}
-		j = 0;
-		for (size_t i = 1; i < pars.size(); i++)
+		j = -1;
+		for (size_t i = 0; i < pars.size(); i++)
 		{
 			if (pars[i] == "location")
 			{
-				++i;
-				count++;
-				while (pars[i] != "server" && i < pars.size())
-				{
-					if (pars[i] == "location")
-						count++;
-					i++;
-				}
-				for (; k < count; k++)
-				{
-					getServers()[j].getLocation().push_back(loc[k]);
-				}
-				--i;
+				getServers()[j].getLocation().push_back(loc[k]);
+				k++;
 			}
 			else if (pars[i] == "server")
 				j++;
@@ -97,8 +89,8 @@ Parser_conf::~Parser_conf() { delete[] servers; }
 
 ServerParam* Parser_conf::getServers() { return servers; }
 
-size_t Parser_conf::get_locsize() { return loc_size; }
+size_t Parser_conf::get_locsize() const{ return loc_size; }
 
-size_t 		Parser_conf::get_servsize() { return serv_size; }
+size_t 		Parser_conf::get_servsize() const{ return serv_size; }
 
 LocationData *Parser_conf::get_loc() { return loc; }

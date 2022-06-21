@@ -1,7 +1,12 @@
 #ifndef CLIENT_H
 #define CLIENT_H
 
-#include "ASocket.hpp"
+#include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <netinet/in.h>
 
 enum ClientState 
 {
@@ -13,8 +18,11 @@ enum ClientState
 
 struct Client 
 {
-	int 		channel;
-	sockaddr_in peer;
+	int 		sock;
+	int 		fd;
+	ClientState state;
+	Client(int sock, int fd, ClientState state) : sock(sock), fd(fd), state(state){};
+	bool operator < (const Client c) const { return fd < c.fd; }
 };
 
 #endif

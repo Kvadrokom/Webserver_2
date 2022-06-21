@@ -1,92 +1,104 @@
 #include "Http_server.hpp"
 
-Http_server::Http_server(int domain, int service, int protocol, int port,
-			u_long interface, int backlog) : AServer(domain, service, protocol, port, interface, backlog)
+int	Http_server::setServ(Parser_conf &conf)
 {
-	sock_sv = getsocket()->get_sock();
-	clear();
-	fcntl(sock_sv, F_SETFL, O_NONBLOCK);
-	// timeout.tv_sec = 15;
-	// timeout.tv_usec = 0;
-	clients.clear();
-	FD_ZERO(&readset);
-	clients.insert(sock_sv);
-	mx = sock_sv;
-	launch();
+	for (size_t i = 0; i < conf.get_servsize(); i++)
+	{
+		Server *serv = new Server(conf.getServers()[i].getPort());
+		if (serv->setup(backlog))
+		{
+			FD_SET(serv->getSock(), &masterset);
+			if (mx < serv->getSock())
+				mx = serv->getSock();
+			servers.insert(std::make_pair(serv->getSock(), conf.getServers()[i]));
+		}
+		else
+			return 0;
+	}
+	return 1;
 }
 
-Http_server::Http_server() : AServer(AF_INET, SOCK_STREAM, 0, 8500, INADDR_ANY, 10)
-{
-	sock_sv = getsocket()->get_sock();
+Http_server::Http_server(int backlog, const Parser_conf& conf): mx(0), backlog(backlog), conf(conf)
+{	
 	clear();
-	fcntl(sock_sv, F_SETFL, O_NONBLOCK);
-	// timeout.tv_sec = 15;
-	// timeout.tv_usec = 0;
+	FD_ZERO(&masterset);
 	FD_ZERO(&readset);
-	clients.insert(sock_sv);
-	mx = sock_sv;
-	launch();
-};
+	FD_ZERO(&writeset);
+	clients.clear();
+}
 
 void Http_server::launch()
 {
 	while (true)
 	{
 		std::cout << "===========Waiting==========\n";
-		for(std::set<int>::iterator it = clients.begin(); it != clients.end(); it++)
-			FD_SET(*it, &readset);
-		mx = std::max(mx, *std::max_element(clients.begin(), clients.end()));
-		if(select(mx + 1, &readset, NULL, NULL, NULL) <= 0)
+		readset = masterset;
+		int res = select(mx + 1, &readset, &writeset, NULL, NULL);
+		std::cout << "-------------------Select-----------------" << std::endl;
+		if (res < 0)
+			continue;
+		std::map<int, ServerParam>::iterator it = servers.begin();
+		for (; it != servers.end(); ++it)
 		{
-			perror("select");
-			exit(3);
+			if(FD_ISSET(it->first, &readset))
+			{
+				// Поступил новый запрос на соединение, используем accept
+				new_socket = accept(it->first, NULL, NULL);
+				if (new_socket < 0)
+				{
+					perror("accept");
+					return;
+				}
+				if (new_socket > mx)
+					mx = new_socket;
+				fcntl(new_socket, F_SETFL, O_NONBLOCK);
+				clients.insert(Client(it->first, new_socket, CLIENT_RECEIVE_REQUEST));
+				FD_SET(new_socket, &masterset);
+			}
 		}
-		accepter();
+		for(std::set<Client>::iterator it = clients.begin(); it != clients.end(); it++)
+		{
+			if(FD_ISSET(it->fd, &readset))
+			{
+				// Поступили данные от клиента, читаем их
+				int bytes_read = recv(it->fd, arr, 1024, 0);
+				std::cout << "fd = " << it->fd << " , bytes = " << bytes_read << std::endl;
+				if (bytes_read <= 0)
+				{
+					// Соединение разорвано, удаляем сокет из множества
+					close(it->fd);
+					clients.erase(*it);
+					FD_CLR(it->fd, &masterset);
+					continue;
+				}
+				handler(it->fd);
+			}
+		}
 		std::cout << "============Done============\n\n";
-	}
-}
-
-void Http_server::accepter()
-{
-	if(FD_ISSET(sock_sv, &readset))
-	{
-		// Поступил новый запрос на соединение, используем accept
-		new_socket = accept(sock_sv, NULL, NULL);
-		if(new_socket < 0)
-		{
-			perror("accept");
-			exit(3);
-		}
-		fcntl(new_socket, F_SETFL, O_NONBLOCK);
-		clients.insert(new_socket);
-		// FD_SET(new_socket, &readset);
-	}
-	for(std::set<int>::iterator it = clients.begin(); it != clients.end(); it++)
-	{
-		if(FD_ISSET(*it, &readset))
-		{
-			// Поступили данные от клиента, читаем их
-			int bytes_read = recv(*it, arr, 1024, 0);
-			std::cout << "fd = " << *it << " , bytes = " << bytes_read << std::endl;
-			if (bytes_read <= 0 && *it != sock_sv)
-			{
-				// Соединение разорвано, удаляем сокет из множества
-				close(*it);
-				clients.erase(*it);
-				FD_CLR(*it, &readset);
-				continue;
-			}
-			if (*it != sock_sv)
-			{
-				handler(*it);
-				// responder(*it);
-			}
-		}
 	}
 }
 
 void Http_server::handler(int fd)
 {
+	ServerParam src;
+	int flag = 0;
+	// std::string www;
+
+	for (std::set<Client>::iterator itcl = clients.begin(); itcl != clients.end(); itcl++)
+	{
+		if (fd == itcl->fd)
+		{
+			std::map<int, ServerParam>::iterator itsv = servers.begin();
+			for (; itsv != servers.end(); ++itsv)
+			{
+				if (itcl->sock == itsv->first)
+				{
+					src = itsv->second;
+					break;
+				}
+			}
+		}	
+	}	
 	std::cout << arr << "\n";
 	std::istringstream iss(arr);
 	std::vector<std::string> parsed((std::istream_iterator<std::string>(iss)),
@@ -95,23 +107,31 @@ void Http_server::handler(int fd)
 	std::string content = "<h1>404 Not Found</h1>";
 	std::string htmlFile = "/index.html";
 	int errorCode = 404;
-
+	
 	// If the GET request is valid, try and get the name
 	if (parsed.size() >= 3)
 	{
 		if (parsed[0] == "GET")
 		{
 			htmlFile = parsed[1];
-			// If the file is just a slash, use index.html. This should really
-			// be if it _ends_ in a slash. I'll leave that for you :)
-			if (htmlFile == "/")
-			htmlFile = "/index.html";
+			for (size_t i = 0; i < src.getLocation().size(); i++)
+			{
+				if (htmlFile == src.getLocation()[i].getPath())
+				{
+					if (htmlFile == "/")
+						htmlFile = "/index.html";
+					else
+						htmlFile = src.getLocation()[i].getPath() + "/index.html";
+					flag = 1;
+					break;
+				}
+			}	
 		}
 		else if (parsed[0] == "POST")
 		{
 			htmlFile = parsed[1];
 			if (htmlFile == "/")
-			htmlFile = "/index.html";
+				htmlFile = "/index.html";
 		}
 	}
 	// Open the document in the local file system
@@ -119,7 +139,7 @@ void Http_server::handler(int fd)
 	std::ifstream f(www.c_str());
 
 	// Check if it opened and if it did, grab the entire contents
-	if (f.good())
+	if ((f.good() && flag )|| htmlFile == "/my_foto.jpg")
 	{
 		std::string str((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
 		content = str;

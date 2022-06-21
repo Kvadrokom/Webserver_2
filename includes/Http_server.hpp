@@ -1,38 +1,33 @@
 #ifndef HSERVER_H
 #define HSERVER_H
 
-#include "AServer.hpp"
-#include <vector>
-#include <string>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <unistd.h>
-#include <set>
-#include "Client.hpp"
-#include <fstream>
-#include "BindingSocket.hpp"
-#include <sstream>
-#include <fcntl.h>
+#include <map>
+#include "Server.hpp"
+#include "Parser_conf.hpp"
+#include "LocationData.hpp"
+#include "ServerParam.hpp"
 
-class Http_server: AServer
+class Http_server
 {
 private:
-	char			arr[1024];
-	int				new_socket;
-	std::set<int> 	clients;
-	fd_set 			readset;
-	int				mx;
-	// timeval 		timeout;
-	int				sock_sv;
+	char						arr[1024];
+	int							new_socket;
+	std::set<Client> 			clients;
+	std::map<int, ServerParam> 	servers;
+	fd_set 						readset;
+	fd_set 						writeset;
+	fd_set 						masterset;
+	int							mx;
+	int							backlog;
+	Parser_conf					conf;
+	// timeval 					timeout;
 
-	void accepter();
 	void handler(int fd);
 	void responder(int fd, std::string content, int errorCode);
 
 public:
-	Http_server();
-	Http_server(int domain, int service, int protocol, int port,
-				u_long interface, int backlog);
+	Http_server(int backlog, const Parser_conf& conf);
+	int	setServ(Parser_conf &conf);
 	~Http_server();
 	void clear();
 	void launch();
