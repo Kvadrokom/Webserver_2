@@ -7,6 +7,7 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <netinet/in.h>
+#include <string>
 
 enum ClientState 
 {
@@ -19,11 +20,11 @@ enum ClientState
 
 struct Client 
 {
-	int 		sock;
-	char		accept[1024];
-	char		sendto[1024];
-	int 		fd;
-	ClientState state;
+	int 			sock;
+	char			accept[1024];
+	std::string		sendto;
+	int 			fd;
+	ClientState 	state;
 	Client();
 	Client(int sock, int fd, ClientState state);
 	bool operator<(const Client c) const;
