@@ -7,15 +7,17 @@
 #include <fstream>
 #include <sstream>
 #include <cstdlib>
-#include "Client.hpp"
+#include "Request.hpp"
 #include <iostream>
+#include "ServerParam.hpp"
 
 struct Responce
 {
+	Responce();
+	// Responce(const Request &req);
+	Request req;
 
-	Responce(Client &cli);
-	std::string head;
-	void	heading(const int content_size, const std::string &file);
+	void 	start(const ServerParam &file, const Request& req);
 	void	static_handle();
 };
 

@@ -57,7 +57,7 @@ void Http_server::launch()
 				if (new_socket > mx)
 					mx = new_socket;
 				fcntl(new_socket, F_SETFL, O_NONBLOCK);
-				clients.push_back(Client(it->first, new_socket, CLIENT_RECEIVE_REQUEST));
+				clients.push_back(Client(it->first, new_socket, it->second));
 				FD_SET(new_socket, &masterset);
 			}
 		}
@@ -76,17 +76,23 @@ void Http_server::launch()
 					FD_CLR(it->fd, &masterset);
 					continue;
 				}
-				it->state = CLIENT_START;
-				Request req(*it);
-				if (it->state == CLIENT_RECEIVE_REQUEST)
-					FD_SET(it->sock, &writeset);
+				it->recieve_req();
+				it->req.state = CLIENT_START;
+				it->req.recieve(it->arr, it->accept);
+				if (it->req.state == CLIENT_RECEIVE_REQUEST)
+				{
+					it->answer.start(it->param, it->req);
+					// FD_SET(it->sock, &writeset);
+					std::cout << "it->sendto" << "\n";
+					std::cout << it->req.body << "\n";
+				}
+
 				// handler(it->fd);
 			}
 			if(FD_ISSET(it->fd, &writeset))
 			{
-				it->state = CLIENT_SEND_DATA;
-				Responce answer(*it);
-				if (it->state == CLIENT_TERMINATED)
+				it->req.state = CLIENT_SEND_DATA;
+				if (it->req.state == CLIENT_TERMINATED)
 				{
 					close(it->fd);
 					clients.erase(it);

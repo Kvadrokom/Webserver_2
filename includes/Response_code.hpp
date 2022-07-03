@@ -1,6 +1,15 @@
-#ifndef RESPONSE_H
-#define RESPONSE_H
+#ifndef RESPONSE_CODE_H
+#define RESPONSE_CODE_H
 
 #define R201 201
+
+enum ClientStatusCode 
+{
+	DEFAULT,
+	BAD_REQUEST_404,
+	NOT_FOUND_404,
+	FORBIDDEN_403,
+	INTERNAL_SERVER_ERROR_500
+};
 
 #endif

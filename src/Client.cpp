@@ -1,15 +1,23 @@
 #include "Client.hpp"
 
-Client::Client(int sock, int fd, ClientState state) : sock(sock), fd(fd), state(state)
+Client::Client(int sock, int fd, const ServerParam& param) : sock(sock), fd(fd), req(), param(param)
 {
 	init();
 }
 
-Client::Client():sock(-1), fd(-1), state(CLIENT_DEFAULT)
+Client::Client():sock(-1), fd(-1)
 {
 	init();
 }
 
+void	Client::recieve_req()
+{
+	std::istringstream iss(accept);
+	std::vector<std::string> arr((std::istream_iterator<std::string>(iss)), 
+								std::istream_iterator<std::string>());
+	 this->arr = arr;
+	
+}
 
 bool Client::operator < (const Client c) const { return fd < c.fd; }
 
