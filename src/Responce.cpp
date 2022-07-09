@@ -49,23 +49,25 @@ int	Responce::check_req(ServerParam &file, const Request& req)
 void	Responce::Responce_get(Request& req)
 {
 	std::stringstream response;		 // сюда будет записываться ответ клиенту
-	std::stringstream response_body; 
+	// std::stringstream response_body; 
 	int errorCode = 404;
 	// std::string htmlFile = req.path;
 	std::string content = "<h1>404 Not Found</h1>";
-	std::string www = "www" + req.path;
+	std::string www = "www" + req.path + "index.html";
 	std::ifstream f(www.c_str());
-	if (f.good() || req.path == "/my_foto.jpg")
+	std::cout << www.c_str() << '\n';
+	if (f.good() /*|| req.path == "/my_foto.jpg" */)
 	{
 		std::string str((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
 		content = str;
 		errorCode = 200;
 	}
+	// response_body << content;
 	response 	<< "HTTP/1.1 " << errorCode << "\r\n"
 				<< "Version: HTTP/1.1\r\n"
 				<< "Content-Type: text/html; charset=utf-8\r\n"
 				<< "Accept-Ranges: bytes\r\n"
-				<< "Content-Length: " << response_body.str().length()
+				<< "Content-Length: " << content.length()
 				<< "\r\n\r\n"
 				<< content.c_str();
 	response_ = response.str();
@@ -85,8 +87,7 @@ void	Responce::Responce_del(Request& req)
 void	Responce::Responce_post(Request& req)
 {
 	std::string file = req.chunked_body + req.body;
-	std::ofstream out;
-	bool ok = static_cast<bool>(std::ofstream("file1.txt").fill(file.c_str())); // create file
-	if(!ok)
-		req.status = NOT_FOUND_404;
+	std::ofstream out("file1.txt");
+	out << file;
+	// req.status = NOT_FOUND_404;
 }

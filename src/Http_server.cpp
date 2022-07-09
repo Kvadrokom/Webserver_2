@@ -63,6 +63,23 @@ void Http_server::launch()
 		}
 		for(std::list<Client>::iterator it = clients.begin(); it != clients.end(); it++)
 		{
+			if(FD_ISSET(it->fd, &writeset))
+			{
+				it->req.state = CLIENT_SEND_DATA;
+				int result = send(it->fd, it->answer.response_.c_str(),
+							it->answer.response_.length(), 0);
+				if (result < 0)
+				{
+					// произошла ошибка при отправле данных
+					std::cerr << "send failed: " << "\n";
+				}
+				if (it->req.state == CLIENT_TERMINATED)
+				{
+					close(it->fd);
+					clients.erase(it);
+					FD_CLR(it->fd, &masterset);
+				}
+			}
 			if(FD_ISSET(it->fd, &readset))
 			{
 				// Поступили данные от клиента, читаем их
@@ -82,22 +99,14 @@ void Http_server::launch()
 				if (it->req.state == CLIENT_RECEIVE_REQUEST)
 				{
 					it->answer.start(it->param, it->req);
+					std::cout << it->answer.response_;
+					FD_SET(it->sock, &writeset);
 					// FD_SET(it->sock, &writeset);
-					std::cout << "it->sendto" << "\n";
+					// std::cout << "it->sendto" << "\n";
 					std::cout << it->req.body << "\n";
 				}
 
 				// handler(it->fd);
-			}
-			if(FD_ISSET(it->fd, &writeset))
-			{
-				it->req.state = CLIENT_SEND_DATA;
-				if (it->req.state == CLIENT_TERMINATED)
-				{
-					close(it->fd);
-					clients.erase(it);
-					FD_CLR(it->fd, &masterset);
-				}
 			}
 		}
 		std::cout << "============Done============\n\n";
@@ -196,7 +205,7 @@ void Http_server::responder(int fd, std::string content, int errorCode)
 	clear();
 	if (result < 0)
 	{
-		// произошла ошибка при отправле данных
+		// произошла ошибка при отправке данных
 		std::cerr << "send failed: " << "\n";
 	}
 }
