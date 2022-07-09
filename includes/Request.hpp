@@ -43,6 +43,7 @@ struct Request
 {
 	std::string					method;
 	std::string					Connection;
+	std::string					path;
 	int							Content_Length;
 	std::vector<std::string> 	arr;
 	std::string					buf;

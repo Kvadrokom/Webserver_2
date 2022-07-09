@@ -13,13 +13,22 @@
 
 struct Responce
 {
+	std::string	head;
+	std::string	body;
+	std::string	responce_code;
+	std::string content;
+	std::string response_;
+
 	Responce();
 	// Responce(const Request &req);
 	Request req;
 
-	void 	start(const ServerParam &file, const Request& req);
-	void	static_handle();
+	void 	start(ServerParam &file, Request& req);
+	int		check_req(ServerParam &file, const Request& req);
+	void	Responce_get(Request& req);
+	void	Responce_post(Request& req);
+	void	Responce_del(Request& req);
+	void 	bad_request();
 };
-
 
 #endif

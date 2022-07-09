@@ -37,11 +37,12 @@ void	Request::recieve(std::vector<std::string> arr, std::string str)
 void	Request::parse_header()
 {
 	ft_toupper((method = arr[0]));
+	ft_toupper((path = arr[1]));
 	ft_toupper(arr[2]);
 	if (arr[2] != "HTTP/1.1" || allowed_req(arr[0]))
 	{
 		state = CLIENT_TERMINATED;
-		status = BAD_REQUEST_404;
+		status = BAD_REQUEST_400;
 		return;
 	}
 	size_t pos = buf.find(CRLF_CRLF);
@@ -79,7 +80,7 @@ void	Request::start()
 	else
 	{
 		state = CLIENT_TERMINATED;
-		status = BAD_REQUEST_404;
+		status = BAD_REQUEST_400;
 		return;
 	}
 }
@@ -103,10 +104,15 @@ void	Request::get_body_chunked()
 	std::string chunk_raw;
 	chunk_raw = buf.substr(header.size());
 	size_t size = atoi(chunk_raw.c_str());
+	if (size == 0)
+	{
+		req_status = END_REQ;
+		state = CLIENT_RECEIVE_REQUEST;
+	}
 	size_t pos;
 	if ((pos = chunk_raw.find(CRLF)) != std::string::npos)
 		chunked_body += chunk_raw.substr(pos + 2, size);
-	std::cout << "chunked_body = " << chunked_body << '\n';
+	// std::cout << "chunked_body = " << chunked_body << '\n';
 }
 
 void	Request::get_body_length()
