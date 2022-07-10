@@ -101,6 +101,8 @@ void Http_server::launch()
 					it->answer.start(it->param, it->req);
 					std::cout << it->answer.response_;
 					FD_SET(it->sock, &writeset);
+					FD_CLR(it->sock, &readset);
+					FD_CLR(it->sock, &masterset);
 					// FD_SET(it->sock, &writeset);
 					// std::cout << "it->sendto" << "\n";
 					std::cout << it->req.body << "\n";
