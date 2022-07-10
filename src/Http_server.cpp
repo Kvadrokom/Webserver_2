@@ -12,7 +12,7 @@ int	Http_server::setServ(Parser_conf &conf)
 			server_pull.push_back(serv);
 			if (serv->setup(backlog))
 			{
-				FD_SET(serv->getSock(), &masterset);
+				// FD_SET(serv->getSock(), &masterset);
 				if (mx < serv->getSock())
 					mx = serv->getSock();
 				servers.insert(std::make_pair(serv->getSock(), conf.getServers()[i]));
@@ -26,10 +26,14 @@ int	Http_server::setServ(Parser_conf &conf)
 Http_server::Http_server(int backlog, const Parser_conf& conf): mx(0), backlog(backlog), conf(conf)
 {	
 	clear();
-	FD_ZERO(&masterset);
+	clear_set();
+	clients.clear();
+}
+
+void	Http_server::clear_set()
+{
 	FD_ZERO(&readset);
 	FD_ZERO(&writeset);
-	clients.clear();
 }
 
 void Http_server::launch()
@@ -37,8 +41,22 @@ void Http_server::launch()
 	while (true)
 	{
 		std::cout << "===========Waiting==========\n";
-		readset = masterset;
-		int res = select(mx + 1, &readset, &writeset, NULL, NULL);
+		int max = mx;
+		clear_set();
+		for (std::map<int, ServerParam>::iterator it = servers.begin(); it != servers.end(); ++it)
+			FD_SET(it->first, &readset);
+		for(std::list<Client>::iterator it = clients.begin(); it != clients.end(); it++)
+		{
+			FD_SET(it->fd, &readset);
+			if (it->answer.state == READY)
+				FD_SET(it->fd, &writeset);
+			if (it->fd > max)
+				max = it->fd;
+		}
+
+		/**********************************SELECT****************************************/
+		/*********************************************************************************/
+		int res = select(max + 1, &readset, &writeset, NULL, NULL);
 		std::cout << "-------------------Select-----------------" << std::endl;
 		if (res < 0)
 			continue;
@@ -54,32 +72,12 @@ void Http_server::launch()
 					perror("accept");
 					return;
 				}
-				if (new_socket > mx)
-					mx = new_socket;
 				fcntl(new_socket, F_SETFL, O_NONBLOCK);
 				clients.push_back(Client(it->first, new_socket, it->second));
-				FD_SET(new_socket, &masterset);
 			}
 		}
 		for(std::list<Client>::iterator it = clients.begin(); it != clients.end(); it++)
 		{
-			if(FD_ISSET(it->fd, &writeset))
-			{
-				it->req.state = CLIENT_SEND_DATA;
-				int result = send(it->fd, it->answer.response_.c_str(),
-							it->answer.response_.length(), 0);
-				if (result < 0)
-				{
-					// произошла ошибка при отправле данных
-					std::cerr << "send failed: " << "\n";
-				}
-				if (it->req.state == CLIENT_TERMINATED)
-				{
-					close(it->fd);
-					clients.erase(it);
-					FD_CLR(it->fd, &masterset);
-				}
-			}
 			if(FD_ISSET(it->fd, &readset))
 			{
 				// Поступили данные от клиента, читаем их
@@ -90,7 +88,6 @@ void Http_server::launch()
 					// Соединение разорвано, удаляем сокет из множества
 					close(it->fd);
 					clients.erase(it);
-					FD_CLR(it->fd, &masterset);
 					continue;
 				}
 				it->recieve_req();
@@ -100,15 +97,29 @@ void Http_server::launch()
 				{
 					it->answer.start(it->param, it->req);
 					std::cout << it->answer.response_;
-					FD_SET(it->sock, &writeset);
-					FD_CLR(it->sock, &readset);
-					FD_CLR(it->sock, &masterset);
-					// FD_SET(it->sock, &writeset);
-					// std::cout << "it->sendto" << "\n";
 					std::cout << it->req.body << "\n";
 				}
-
-				// handler(it->fd);
+			}
+			if(FD_ISSET(it->fd, &writeset))
+			{
+				size_t result = send(it->fd, it->answer.response_.c_str(),
+							it->answer.response_.length(), 0);
+				if (result < 0)
+				{
+					// произошла ошибка при отправле данных
+					std::cerr << "send failed: " << "\n";
+				}
+				if (result >= it->answer.response_.length())
+					it->answer.state = DONE;
+				else
+				{
+					it->answer.response_.substr(result);
+				}
+				if (it->answer.state == DONE && it->req.Connection != "keep-alive")
+				{
+					close(it->fd);
+					clients.erase(it);
+				}
 			}
 		}
 		std::cout << "============Done============\n\n";

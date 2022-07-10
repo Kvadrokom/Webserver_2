@@ -1,7 +1,7 @@
 #include "Responce.hpp"
 
 Responce::Responce():head(""), body(""), responce_code(""),
-		content(""), response_("") {};
+		content(""), response_(""), state(START) {};
 
 void	Responce::start(ServerParam &file, Request& req)
 {
@@ -48,12 +48,16 @@ int	Responce::check_req(ServerParam &file, const Request& req)
 
 void	Responce::Responce_get(Request& req)
 {
-	std::stringstream response;		 // сюда будет записываться ответ клиенту
-	// std::stringstream response_body; 
+	std::string www;
+	std::stringstream response; // сюда будет записываться ответ клиенту
+	// std::stringstream response_body;
 	int errorCode = 404;
 	// std::string htmlFile = req.path;
 	std::string content = "<h1>404 Not Found</h1>";
-	std::string www = "www" + req.path + "index.html";
+	if (req.path != "")
+		www = "www" + req.path + "/index.html";
+	else
+		www = "www/index.html";
 	std::ifstream f(www.c_str());
 	std::cout << www.c_str() << '\n';
 	if (f.good() /*|| req.path == "/my_foto.jpg" */)
@@ -71,6 +75,7 @@ void	Responce::Responce_get(Request& req)
 				<< "\r\n\r\n"
 				<< content.c_str();
 	response_ = response.str();
+	state = READY;
 }
 
 void	Responce::Responce_del(Request& req)

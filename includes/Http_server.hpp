@@ -17,7 +17,7 @@ private:
 	std::map<int, ServerParam> 	servers;
 	fd_set 						readset;
 	fd_set 						writeset;
-	fd_set 						masterset;
+	// fd_set 						masterset;
 	int							mx;
 	int							backlog;
 	Parser_conf					conf;
@@ -33,9 +33,7 @@ public:
 	~Http_server();
 	void clear();
 	void launch();
+	void clear_set();
 };
-
-
-
 
 #endif

@@ -11,6 +11,14 @@
 #include <iostream>
 #include "ServerParam.hpp"
 
+enum STATE
+{
+	START,
+	PREPARING,
+	READY,
+	DONE
+};
+
 struct Responce
 {
 	std::string	head;
@@ -18,6 +26,7 @@ struct Responce
 	std::string	responce_code;
 	std::string content;
 	std::string response_;
+	STATE		state;		
 
 	Responce();
 	// Responce(const Request &req);
