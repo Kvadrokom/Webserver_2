@@ -7,6 +7,8 @@ enum ClientStatusCode
 {
 	DEFAULT,
 	OK_200,
+	OK_200_POST,
+	OK_200_DEL,
 	BAD_REQUEST_400,
 	NOT_FOUND_404,
 	FORBIDDEN_403,

@@ -1,7 +1,7 @@
 #include "Responce.hpp"
 
 Responce::Responce():head(""), body(""), responce_code(""),
-		content(""), response_(""), state(START) {};
+		content(""), response_(""), www(""), state(START) {};
 
 void	Responce::start(ServerParam &file, Request& req)
 {
@@ -36,10 +36,22 @@ int	Responce::check_req(ServerParam &file, const Request& req)
 	{
 		if (req.method == file.getLocation()[i].getMethod())
 		{
-			if (req.path == file.getLocation()[i].getPath())
+			if (req.method == "GET")
 			{
-				flag = 1;
-				return 1;
+				if (req.path == file.getLocation()[i].getPath())
+				{
+					flag = 1;
+					return 1;
+				}
+			}
+			else
+			{
+				std::cout << req.path.substr(0, 7) << '\n';
+				if (req.path.substr(0, 7) == "/common")
+				{					
+					flag = 1;
+					return 1;
+				}	
 			}
 		}
 	}
@@ -48,7 +60,7 @@ int	Responce::check_req(ServerParam &file, const Request& req)
 
 void	Responce::Responce_get(Request& req)
 {
-	std::string www;
+	// std::string www;
 	std::stringstream response; // сюда будет записываться ответ клиенту
 	// std::stringstream response_body;
 	int errorCode = 404;
@@ -80,19 +92,32 @@ void	Responce::Responce_get(Request& req)
 
 void	Responce::Responce_del(Request& req)
 {
-	std::string www = "www" + req.path;
+	/*std::string*/ www = "www" + req.path;
 	if (std::remove(www.c_str()))
 	{
 		req.status = NOT_FOUND_404;
 	}
 	else
-		req.status = OK_200;
+		req.status = OK_200_DEL;
+	state = DONE;
 }
 
 void	Responce::Responce_post(Request& req)
 {
 	std::string file = req.chunked_body + req.body;
-	std::ofstream out("file1.txt");
-	out << file;
-	// req.status = NOT_FOUND_404;
+	/*std::string*/ www =  "www" + req.path;
+	std::ofstream out(www.c_str());
+	if (out.good())
+	{
+		out << file;
+		req.status = OK_200_POST;
+	}
+	else
+		req.status = NOT_FOUND_404;
+	state = DONE;
+}
+
+void	Responce::make_answer()
+{
+	std::stringstream response;
 }

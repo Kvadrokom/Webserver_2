@@ -26,7 +26,8 @@ struct Responce
 	std::string	responce_code;
 	std::string content;
 	std::string response_;
-	STATE		state;		
+	std::string www;
+	STATE state;
 
 	Responce();
 	// Responce(const Request &req);
@@ -38,6 +39,7 @@ struct Responce
 	void	Responce_post(Request& req);
 	void	Responce_del(Request& req);
 	void 	bad_request();
+	void	make_answer();
 };
 
 #endif
