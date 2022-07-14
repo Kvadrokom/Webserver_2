@@ -110,10 +110,14 @@ void Http_server::launch()
 					std::cerr << "send failed: " << "\n";
 				}
 				if (result >= it->answer.response_.length())
+				{
 					it->answer.state = DONE;
+				}
+					
 				else
 				{
 					it->answer.response_.substr(result);
+					it->req.init();
 				}
 				if (it->answer.state == DONE && it->req.Connection != "keep-alive")
 				{

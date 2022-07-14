@@ -1,7 +1,32 @@
 #include "Responce.hpp"
 
+std::string	responce_code(int state)
+{
+	std::string	content;
+
+	switch (state)
+	{
+	case BAD_REQUEST_400:
+		content =  "<h1>400 Bad Request</h1>";
+		break;
+	case NOT_FOUND_404:
+		content = "<h1>404 Not Found</h1>";
+		break;
+	case FORBIDDEN_403:
+		content = "<h1>403 Forbidden</h1>";
+		break;
+	case INTERNAL_SERVER_ERROR_500:
+		content = "<h1>500 INTERNAL SERVER ERROR</h1>";
+		break;
+	default:
+		break;
+	}
+	return content;
+}
+
+
 Responce::Responce():head(""), body(""), responce_code(""),
-		content(""), response_(""), www(""), state(START) {};
+		content(""), response_(""), www(""), state(START), code_number(0) {};
 
 void	Responce::start(ServerParam &file, Request& req)
 {
@@ -27,6 +52,9 @@ void	Responce::start(ServerParam &file, Request& req)
 void	Responce::bad_request()
 {
 	req.status = BAD_REQUEST_400;
+	content = ::responce_code(req.status);
+	state = READY;
+	make_answer();
 }
 
 int	Responce::check_req(ServerParam &file, const Request& req)
@@ -63,9 +91,9 @@ void	Responce::Responce_get(Request& req)
 	// std::string www;
 	std::stringstream response; // сюда будет записываться ответ клиенту
 	// std::stringstream response_body;
-	int errorCode = 404;
+	code_number = 404;
 	// std::string htmlFile = req.path;
-	std::string content = "<h1>404 Not Found</h1>";
+	content = "<h1>404 Not Found</h1>";
 	if (req.path != "")
 		www = "www" + req.path + "/index.html";
 	else
@@ -76,18 +104,24 @@ void	Responce::Responce_get(Request& req)
 	{
 		std::string str((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
 		content = str;
-		errorCode = 200;
+		code_number = 200;
+	}
+	else
+	{
+		req.status = INTERNAL_SERVER_ERROR_500;
+		content = ::responce_code(req.status);
 	}
 	// response_body << content;
-	response 	<< "HTTP/1.1 " << errorCode << "\r\n"
-				<< "Version: HTTP/1.1\r\n"
-				<< "Content-Type: text/html; charset=utf-8\r\n"
-				<< "Accept-Ranges: bytes\r\n"
-				<< "Content-Length: " << content.length()
-				<< "\r\n\r\n"
-				<< content.c_str();
-	response_ = response.str();
+	// response 	<< "HTTP/1.1 " << code_number << "\r\n"
+	// 			<< "Version: HTTP/1.1\r\n"
+	// 			<< "Content-Type: text/html; charset=utf-8\r\n"
+	// 			<< "Accept-Ranges: bytes\r\n"
+	// 			<< "Content-Length: " << content.length()
+	// 			<< "\r\n\r\n"
+	// 			<< content.c_str();
+	// response_ = response.str();
 	state = READY;
+	make_answer();
 }
 
 void	Responce::Responce_del(Request& req)
@@ -96,10 +130,15 @@ void	Responce::Responce_del(Request& req)
 	if (std::remove(www.c_str()))
 	{
 		req.status = NOT_FOUND_404;
+		code_number = 404;
 	}
 	else
+	{
 		req.status = OK_200_DEL;
-	state = DONE;
+		code_number = 200;
+	}		
+	state = READY;
+	make_answer();
 }
 
 void	Responce::Responce_post(Request& req)
@@ -111,13 +150,40 @@ void	Responce::Responce_post(Request& req)
 	{
 		out << file;
 		req.status = OK_200_POST;
+		content = ::responce_code(req.status);
+		code_number = 200;
 	}
 	else
+	{
 		req.status = NOT_FOUND_404;
-	state = DONE;
+		content = ::responce_code(req.status);
+		code_number = 404;
+	}		
+	state = READY;
+	make_answer();
 }
 
 void	Responce::make_answer()
 {
 	std::stringstream response;
+	response 	<< "HTTP/1.1 " << code_number << "\r\n"
+				<< "Version: HTTP/1.1\r\n"
+				<< "Content-Type: text/html; charset=utf-8\r\n"
+				<< "Accept-Ranges: bytes\r\n"
+				<< "Content-Length: " << content.length()
+				<< "\r\n\r\n"
+				<< content.c_str();
+	response_ = response.str();
+}
+
+void	Responce::init()
+{
+	head = "";
+	body = "";
+	responce_code = "";
+	content = "";
+	response_ = "";
+	www = "";
+	state = START;
+	code_number = 0;
 }

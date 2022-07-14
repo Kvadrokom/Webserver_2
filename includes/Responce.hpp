@@ -11,6 +11,7 @@
 #include <iostream>
 #include "ServerParam.hpp"
 
+
 enum STATE
 {
 	START,
@@ -21,13 +22,14 @@ enum STATE
 
 struct Responce
 {
-	std::string	head;
-	std::string	body;
-	std::string	responce_code;
-	std::string content;
-	std::string response_;
-	std::string www;
-	STATE state;
+	std::string			head;
+	std::string			body;
+	std::string			responce_code;
+	std::string 		content;
+	std::string 		response_;
+	std::string 		www;
+	STATE 				state;
+	int					code_number;
 
 	Responce();
 	// Responce(const Request &req);
@@ -40,6 +42,7 @@ struct Responce
 	void	Responce_del(Request& req);
 	void 	bad_request();
 	void	make_answer();
+	void	init();
 };
 
 #endif

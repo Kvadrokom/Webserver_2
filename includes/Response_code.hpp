@@ -15,4 +15,6 @@ enum ClientStatusCode
 	INTERNAL_SERVER_ERROR_500
 };
 
+std::string responce_code(int state);
+
 #endif
