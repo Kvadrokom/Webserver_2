@@ -19,7 +19,6 @@ class Parser_conf
 		Parser_conf();
 		~Parser_conf();
 
-		// void parser_config();
 		void parser_server();
 		void parser_location();
 

@@ -21,13 +21,13 @@ void	Request::recieve(std::vector<std::string> arr, std::string str)
 		else
 			parse_body();
 	}
-	 if (Content_Length && Content_Length >= (int)(sendto.size() - header.size()))
-	 {
+	if (Content_Length && Content_Length >= (int)(sendto.size() - header.size()))
+	{
 		state = CLIENT_RECEIVE_REQUEST;
 		parse_body();
-	 } 	
-	 else if (req_status !=  HEADER && (method == "GET" || method == "DELETE"))
-	 	state = CLIENT_RECEIVE_REQUEST;
+	} 	
+	else if (req_status !=  HEADER && (method == "GET" || method == "DELETE"))
+		state = CLIENT_RECEIVE_REQUEST;
 	else if (Transfer_Encoding == "chunked")
 		get_body_chunked();
 	// this->start();

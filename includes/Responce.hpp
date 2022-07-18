@@ -30,10 +30,9 @@ struct Responce
 	std::string 		www;
 	STATE 				state;
 	int					code_number;
+	Request 			req;
 
-	Responce();
-	// Responce(const Request &req);
-	Request req;
+	Responce();	
 
 	void 	start(ServerParam &file, Request& req);
 	int		check_req(ServerParam &file, const Request& req);

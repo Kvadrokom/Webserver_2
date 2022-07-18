@@ -18,6 +18,12 @@ std::string	responce_code(int state)
 	case INTERNAL_SERVER_ERROR_500:
 		content = "<h1>500 INTERNAL SERVER ERROR</h1>";
 		break;
+	case OK_200_DEL:
+		content = "<h1>Succesfully delete file</h1>";
+		break;
+	case OK_200_POST:
+		content = "<h1>Succesfully post file</h1>";
+		break;
 	default:
 		break;
 	}
@@ -51,9 +57,10 @@ void	Responce::start(ServerParam &file, Request& req)
 
 void	Responce::bad_request()
 {
-	req.status = BAD_REQUEST_400;
+	req.status = NOT_FOUND_404;
 	content = ::responce_code(req.status);
 	state = READY;
+	code_number = 404;
 	make_answer();
 }
 
@@ -88,11 +95,8 @@ int	Responce::check_req(ServerParam &file, const Request& req)
 
 void	Responce::Responce_get(Request& req)
 {
-	// std::string www;
 	std::stringstream response; // сюда будет записываться ответ клиенту
-	// std::stringstream response_body;
 	code_number = 404;
-	// std::string htmlFile = req.path;
 	content = "<h1>404 Not Found</h1>";
 	if (req.path != "")
 		www = "www" + req.path + "/index.html";
@@ -110,32 +114,26 @@ void	Responce::Responce_get(Request& req)
 	{
 		req.status = INTERNAL_SERVER_ERROR_500;
 		content = ::responce_code(req.status);
+		code_number = 500;
 	}
-	// response_body << content;
-	// response 	<< "HTTP/1.1 " << code_number << "\r\n"
-	// 			<< "Version: HTTP/1.1\r\n"
-	// 			<< "Content-Type: text/html; charset=utf-8\r\n"
-	// 			<< "Accept-Ranges: bytes\r\n"
-	// 			<< "Content-Length: " << content.length()
-	// 			<< "\r\n\r\n"
-	// 			<< content.c_str();
-	// response_ = response.str();
 	state = READY;
 	make_answer();
 }
 
 void	Responce::Responce_del(Request& req)
 {
-	/*std::string*/ www = "www" + req.path;
+	www = "www" + req.path;
 	if (std::remove(www.c_str()))
 	{
-		req.status = NOT_FOUND_404;
-		code_number = 404;
+		req.status = BAD_REQUEST_400;
+		code_number = 400;
+		content = ::responce_code(req.status);
 	}
 	else
 	{
 		req.status = OK_200_DEL;
 		code_number = 200;
+		content = ::responce_code(req.status);
 	}		
 	state = READY;
 	make_answer();
@@ -144,7 +142,7 @@ void	Responce::Responce_del(Request& req)
 void	Responce::Responce_post(Request& req)
 {
 	std::string file = req.chunked_body + req.body;
-	/*std::string*/ www =  "www" + req.path;
+	www =  "www" + req.path;
 	std::ofstream out(www.c_str());
 	if (out.good())
 	{

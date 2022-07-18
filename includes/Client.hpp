@@ -11,24 +11,13 @@
 #include "Request.hpp"
 #include "Responce.hpp"
 #include "ServerParam.hpp"
-// enum ClientState
-// {
-// 	CLIENT_DEFAULT,
-// 	CLIENT_START,
-// 	CLIENT_RECEIVE_REQUEST,
-// 	CLIENT_SEND_DATA,
-// 	CLIENT_TERMINATED
-// };
 
 struct Client 
 {
 	int 						sock;
 	char						accept[1024];
-	// std::string					sendto;
 	std::vector < std::string> 	arr;
 	int 						fd;
-	// ClientState 				state;
-	// ClientStatusCode			status;
 	Request						req;
 	Responce					answer;
 	ServerParam					param;
