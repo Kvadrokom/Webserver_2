@@ -2,34 +2,36 @@
 
 Request::Request(): arr() { init(); }
 
-void	Request::recieve(std::vector<std::string> arr, std::string str)
+void	Request::recieve(std::vector<std::string>& arr, std::string& str)
 {
 	sendto += str;
 	this->arr = arr;
 	this->buf = str;
 	size_t pos;
 
-	if ((pos = str.find(CRLF_CRLF)) != std::string::npos)
+	std::cout << "sendto = " << sendto << "\n\n";
+
+	if ((pos = str.find("\r\n\r")) != std::string::npos)
 	{
-	 	if (req_status == DEF_REQ)
+	 	if (req_status == HEADER)
 	 	{
-	 		req_status = HEADER;
-			header = sendto.substr(0, pos + 4 );
-			std::cout << header << "\n";
+	 		req_status = BODY;
+			header = sendto.substr(0, pos + 3);
+			std::cout << "Header = " << header << "\n";
 			parse_header();
 		}
-		else
+		if (req_status == BODY && method == "POST")
 			parse_body();
 	}
-	if (Content_Length && Content_Length >= (int)(sendto.size() - header.size()))
-	{
-		state = CLIENT_RECEIVE_REQUEST;
-		parse_body();
-	} 	
-	else if (req_status !=  HEADER && (method == "GET" || method == "DELETE"))
-		state = CLIENT_RECEIVE_REQUEST;
-	else if (Transfer_Encoding == "chunked")
-		get_body_chunked();
+	// if (Content_Length && Content_Length >= (int)(sendto.size() - header.size()))
+	// {
+	// 	state = CLIENT_RECEIVE_REQUEST;
+	// 	parse_body();
+	// } 	
+	// else if (req_status !=  HEADER && (method == "GET" || method == "DELETE"))
+	// 	state = CLIENT_RECEIVE_REQUEST;
+	// else if (Transfer_Encoding == "chunked")
+	// 	get_body_chunked();
 	// this->start();
 	// Request::parse_header();
 }
@@ -45,23 +47,32 @@ void	Request::parse_header()
 		status = BAD_REQUEST_400;
 		return;
 	}
-	size_t pos = buf.find(CRLF_CRLF);
-	if (pos != std::string::npos)
+	// size_t pos = buf.find("\r\n\r");
+	// if (pos != std::string::npos)
+	// {
+	// 	req_status = BODY;
+	std::istringstream iss(header.c_str());
+	std::vector<std::string> parsed((std::istream_iterator<std::string>(iss)),
+									std::istream_iterator<std::string>());
+	for (size_t i = 0; i < parsed.size(); ++i)
 	{
-		req_status = BODY;
-		for (size_t i = 0; i < pos; ++i)
+		if (parsed[i] == "Connection:")
+			Connection = parsed[i + 1];
+		if (parsed[i] == "Content-Length:")
+			Content_Length = std::atoi(parsed[i + 1].c_str());
+		if (parsed[i] == "Transfer-Encoding:")
 		{
-			if (arr[i] == "Connection:")
-				Connection = arr[i + 1];
-			if (arr[i] == "Content-Length:")
-				Content_Length = std::atoi(arr[i + 1].c_str());
-			if (arr[i] == "Transfer-Encoding:")
-			{
-				Transfer_Encoding = arr[i + 1];
-				Content_Length = 0;
-			}	
-		}
+			Transfer_Encoding = parsed[i + 1];
+			Content_Length = 0;
+		}	
 	}
+	// }
+	if (method == "GET")
+		state = CLIENT_RECEIVE_REQUEST;
+	// else if (method == "POST")
+	// 	parsePostReq();
+	// else if (method == "DELETE")
+	// 	parseDelReq();
 }
 
 Request::~Request(){}
@@ -94,7 +105,7 @@ void	Request::init()
 	buf = "";
 	sendto = "";
 	chunked_body = "";
-	req_status = DEF_REQ;
+	req_status = HEADER;
 	status = DEFAULT;
 	state = CLIENT_DEFAULT;
 }

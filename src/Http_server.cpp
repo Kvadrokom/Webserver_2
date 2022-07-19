@@ -55,7 +55,7 @@ void Http_server::launch()
 
 		/**********************************SELECT****************************************/
 		/*********************************************************************************/
-		int res = select(max + 1, &readset, &writeset, NULL, NULL);
+		int res = select(	max + 1, &readset, &writeset, NULL, NULL);
 		std::cout << "-------------------Select-----------------" << std::endl;
 		if (res < 0)
 			continue;
@@ -82,8 +82,10 @@ void Http_server::launch()
 				// Поступили данные от клиента, читаем их
 				int bytes_read = recv(it->fd, it->accept, 1024, 0);
 				it->accept[bytes_read - 1] = '\0';
-				std::cout << "fd = " << it->fd << " , bytes = " << bytes_read << std::endl;				
-				std::cout << it->accept << std::endl;
+				std::cout << "fd = " << it->fd << " , bytes = " << bytes_read << std::endl;
+				std::string temp = it->accept;
+				std::cout << "Reading = " << temp << std::endl << std::endl;
+				temp = "";
 				if (bytes_read <= 0)
 				{
 					// Соединение разорвано, удаляем сокет из множества
@@ -91,13 +93,13 @@ void Http_server::launch()
 					clients.erase(it);
 					continue;
 				}
-				it->recieve_req();
+				it->recieve_req(it->accept);
 				it->req.state = CLIENT_START;
-				it->req.recieve(it->arr, it->accept);
+				it->req.recieve(it->arr, it->buffer);
 				if (it->req.state == CLIENT_RECEIVE_REQUEST)
 				{
 					it->answer.start(it->param, it->req);
-					std::cout << it->answer.response_;
+					std::cout << "Responce = " << it->answer.response_ << "\n\n";
 				}
 			}
 			if(FD_ISSET(it->fd, &writeset))

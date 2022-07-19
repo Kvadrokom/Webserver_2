@@ -21,9 +21,10 @@ struct Client
 	Request						req;
 	Responce					answer;
 	ServerParam					param;
+	std::string					buffer;
 	Client();
 	Client(int sock, int fd, const ServerParam& param);
-	void recieve_req();
+	void recieve_req(std::string str);
 	bool operator<(const Client c) const;
 	void init();
 };

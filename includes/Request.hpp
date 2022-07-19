@@ -24,7 +24,7 @@
 
 enum req_stat
 {
-	DEF_REQ,
+	// DEF_REQ,
 	HEADER,
 	BODY,
 	END_REQ
@@ -56,7 +56,7 @@ struct Request
 	std::string					body;
 	std::string					chunked_body;
 
-	void	recieve(std::vector<std::string> arr, std::string str);
+	void	recieve(std::vector<std::string>& arr, std::string& str);
 	Request();
 	~Request();
 	void	start();
