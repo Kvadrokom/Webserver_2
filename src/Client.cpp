@@ -1,6 +1,6 @@
 #include "Client.hpp"
 
-Client::Client(int sock, int fd, const ServerParam& param) : sock(sock), fd(fd), req(), param(param)
+Client::Client(int sock, int fd, const ServerParam& param) : sock(sock), fd(fd), req(), param(param), buffer()
 {
 	init();
 }
@@ -26,6 +26,5 @@ void Client::init()
 	for (size_t i = 0; i < 1024; i++)
 	{
 		accept[i] = '\0';
-	}
-		
+	}		
 }

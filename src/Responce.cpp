@@ -95,9 +95,9 @@ int	Responce::check_req(ServerParam &file, const Request& req)
 
 void	Responce::Responce_get(Request& req)
 {
-	std::stringstream response; // сюда будет записываться ответ клиенту
-	code_number = 404;
-	content = "<h1>404 Not Found</h1>";
+	// std::stringstream response; // сюда будет записываться ответ клиенту
+	// code_number = 404;
+	// content = "<h1>404 Not Found</h1>";
 	if (req.path != "")
 		www = "www" + req.path + "/index.html";
 	else

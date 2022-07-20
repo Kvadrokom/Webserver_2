@@ -4,36 +4,28 @@ Request::Request(): arr() { init(); }
 
 void	Request::recieve(std::vector<std::string>& arr, std::string& str)
 {
+	static int count;
 	sendto += str;
 	this->arr = arr;
 	this->buf = str;
 	size_t pos;
 
-	std::cout << "sendto = " << sendto << "\n\n";
+	std::cout << "sendto = " << sendto << "\nreq_status = " << req_status << "\n\n";
 
-	if ((pos = str.find("\r\n\r")) != std::string::npos)
+	if ((pos = sendto.find("\r\n\r")) != std::string::npos)
 	{
-	 	if (req_status == HEADER)
-	 	{
+		count++;
+		if (req_status == HEADER)
+		{
 	 		req_status = BODY;
 			header = sendto.substr(0, pos + 3);
-			std::cout << "Header = " << header << "\n";
+			std::cout << "Header = " << header << "\nreq_status = " << req_status << "\n";
 			parse_header();
 		}
 		if (req_status == BODY && method == "POST")
 			parse_body();
 	}
-	// if (Content_Length && Content_Length >= (int)(sendto.size() - header.size()))
-	// {
-	// 	state = CLIENT_RECEIVE_REQUEST;
-	// 	parse_body();
-	// } 	
-	// else if (req_status !=  HEADER && (method == "GET" || method == "DELETE"))
-	// 	state = CLIENT_RECEIVE_REQUEST;
-	// else if (Transfer_Encoding == "chunked")
-	// 	get_body_chunked();
-	// this->start();
-	// Request::parse_header();
+	std::cout << "count = " << count << "\n";
 }
 
 void	Request::parse_header()
@@ -47,10 +39,6 @@ void	Request::parse_header()
 		status = BAD_REQUEST_400;
 		return;
 	}
-	// size_t pos = buf.find("\r\n\r");
-	// if (pos != std::string::npos)
-	// {
-	// 	req_status = BODY;
 	std::istringstream iss(header.c_str());
 	std::vector<std::string> parsed((std::istream_iterator<std::string>(iss)),
 									std::istream_iterator<std::string>());
@@ -66,23 +54,18 @@ void	Request::parse_header()
 			Content_Length = 0;
 		}	
 	}
-	// }
-	if (method == "GET")
+	if (method == "GET" || method == "DELETE")
 		state = CLIENT_RECEIVE_REQUEST;
-	// else if (method == "POST")
-	// 	parsePostReq();
-	// else if (method == "DELETE")
-	// 	parseDelReq();
 }
 
 Request::~Request(){}
 
-void	Request::parse_body()
-{
-	start();
-}
+// void	Request::parse_body()
+// {
+// 	start();
+// }
 
-void	Request::start()
+void	Request::parse_body()
 {
 	if (Transfer_Encoding == "chunked")
 		get_body_chunked();

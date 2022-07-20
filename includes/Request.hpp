@@ -59,7 +59,7 @@ struct Request
 	void	recieve(std::vector<std::string>& arr, std::string& str);
 	Request();
 	~Request();
-	void	start();
+	// void	start();
 	void	init();
 	void	parse_header();
 	void	get_body_length();

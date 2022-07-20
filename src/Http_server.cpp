@@ -46,9 +46,11 @@ void Http_server::launch()
 			FD_SET(it->first, &readset);
 		for(std::list<Client>::iterator it = clients.begin(); it != clients.end(); it++)
 		{
-			FD_SET(it->fd, &readset);
+			// FD_SET(it->fd, &readset);
 			if (it->answer.state == READY)
 				FD_SET(it->fd, &writeset);
+			else
+				FD_SET(it->fd, &readset);
 			if (it->fd > max)
 				max = it->fd;
 		}
@@ -81,7 +83,7 @@ void Http_server::launch()
 			{
 				// Поступили данные от клиента, читаем их
 				int bytes_read = recv(it->fd, it->accept, 1024, 0);
-				it->accept[bytes_read - 1] = '\0';
+				it->accept[bytes_read] = '\0';
 				std::cout << "fd = " << it->fd << " , bytes = " << bytes_read << std::endl;
 				std::string temp = it->accept;
 				std::cout << "Reading = " << temp << std::endl << std::endl;
@@ -94,6 +96,7 @@ void Http_server::launch()
 					continue;
 				}
 				it->recieve_req(it->accept);
+				it->init();
 				it->req.state = CLIENT_START;
 				it->req.recieve(it->arr, it->buffer);
 				if (it->req.state == CLIENT_RECEIVE_REQUEST)
