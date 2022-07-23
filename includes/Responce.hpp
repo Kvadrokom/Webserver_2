@@ -35,7 +35,7 @@ struct Responce
 	Responce();	
 
 	void 	start(ServerParam &file, Request& req);
-	int		check_req(ServerParam &file, const Request& req);
+	int		check_req(ServerParam &file, Request& req);
 	void	Responce_get(Request& req);
 	void	Responce_post(Request& req);
 	void	Responce_del(Request& req);

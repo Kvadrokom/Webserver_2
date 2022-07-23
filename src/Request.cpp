@@ -12,13 +12,13 @@ void	Request::recieve(std::vector<std::string>& arr, std::string& str)
 
 	std::cout << "sendto = " << sendto << "\nreq_status = " << req_status << "\n\n";
 
-	if ((pos = sendto.find("\r\n\r")) != std::string::npos)
+	if ((pos = sendto.find(CRLF_CRLF)) != std::string::npos)
 	{
 		count++;
 		if (req_status == HEADER)
 		{
 	 		req_status = BODY;
-			header = sendto.substr(0, pos + 3);
+			header = sendto.substr(0, pos + 4);
 			std::cout << "Header = " << header << "\nreq_status = " << req_status << "\n";
 			parse_header();
 		}
@@ -33,15 +33,19 @@ void	Request::parse_header()
 	ft_toupper((method = arr[0]));
 	ft_toupper((path = arr[1]));
 	ft_toupper(arr[2]);
-	if (arr[2] != "HTTP/1.1" || allowed_req(arr[0]))
-	{
-		state = CLIENT_TERMINATED;
-		status = BAD_REQUEST_400;
-		return;
-	}
+	
 	std::istringstream iss(header.c_str());
 	std::vector<std::string> parsed((std::istream_iterator<std::string>(iss)),
 									std::istream_iterator<std::string>());
+	ft_toupper((method = parsed[0]));
+	ft_toupper((path = parsed[1]));
+	ft_toupper(parsed[2]);
+	if (parsed[2] != "HTTP/1.1" || allowed_req(method))
+	{
+		state = CLIENT_RECEIVE_REQUEST;
+		status = BAD_REQUEST_400;
+		return;
+	}
 	for (size_t i = 0; i < parsed.size(); ++i)
 	{
 		if (parsed[i] == "Connection:")
@@ -96,7 +100,9 @@ void	Request::init()
 void	Request::get_body_chunked()
 {
 	std::string chunk_raw;
-	chunk_raw = buf.substr(header.size());
+	if (sendto.size() <= header.size())
+		return;
+	chunk_raw = sendto.substr(header.size());
 	size_t size = atoi(chunk_raw.c_str());
 	if (size == 0)
 	{

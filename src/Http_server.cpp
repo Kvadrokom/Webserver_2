@@ -57,7 +57,7 @@ void Http_server::launch()
 
 		/**********************************SELECT****************************************/
 		/*********************************************************************************/
-		int res = select(	max + 1, &readset, &writeset, NULL, NULL);
+		int res = select(max + 1, &readset, &writeset, NULL, NULL);
 		std::cout << "-------------------Select-----------------" << std::endl;
 		if (res < 0)
 			continue;
@@ -102,6 +102,7 @@ void Http_server::launch()
 				if (it->req.state == CLIENT_RECEIVE_REQUEST)
 				{
 					it->answer.start(it->param, it->req);
+					it->req.sendto = "";
 					std::cout << "Responce = " << it->answer.response_ << "\n\n";
 				}
 			}

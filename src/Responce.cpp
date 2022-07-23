@@ -38,15 +38,15 @@ void	Responce::start(ServerParam &file, Request& req)
 {
 	if (check_req(file, req))
 	{
-		if (req.method ==  "GET")
+		if (req.method == "GET")
 		{
 			Responce_get(req);
 		}
-		else if (req.method ==  "POST")
+		else if (req.method == "POST")
 		{
 			Responce_post(req);
 		}
-		else if (req.method ==  "DELETE")
+		else if (req.method == "DELETE")
 		{
 			Responce_del(req);
 		}
@@ -64,7 +64,7 @@ void	Responce::bad_request()
 	make_answer();
 }
 
-int	Responce::check_req(ServerParam &file, const Request& req)
+int	Responce::check_req(ServerParam &file, Request& req)
 {
 	size_t flag = 0;
 	for (size_t i = 0; i < file.getLocation().size(); i++)
@@ -86,7 +86,13 @@ int	Responce::check_req(ServerParam &file, const Request& req)
 				{					
 					flag = 1;
 					return 1;
-				}	
+				}
+				else if (req.path == "/")
+				{
+					req.path = "/common/file";
+					flag = 1;
+					return 1;
+				}
 			}
 		}
 	}
@@ -98,7 +104,7 @@ void	Responce::Responce_get(Request& req)
 	// std::stringstream response; // сюда будет записываться ответ клиенту
 	// code_number = 404;
 	// content = "<h1>404 Not Found</h1>";
-	if (req.path != "")
+	if (req.path != "" && req.path != "/")
 		www = "www" + req.path + "/index.html";
 	else
 		www = "www/index.html";
