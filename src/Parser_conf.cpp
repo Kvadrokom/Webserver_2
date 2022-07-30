@@ -70,6 +70,8 @@ void	Parser_conf::parser_location()
 					loc[j].setRoot(pars[x + 1]);
 				else if (pars[x] == "method")
 					loc[j].setMethod(pars[x + 1]);
+				else if (pars[x] == "server_name")
+					loc[j].setName(pars[x + 1]);
 			}
 			j++;
 		}

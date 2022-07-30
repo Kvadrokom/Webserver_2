@@ -73,6 +73,11 @@ int	Responce::check_req(ServerParam &file, Request& req)
 		{
 			if (req.method == "GET")
 			{
+				if (req.path == file.getLocation()[i].getName())
+				{
+					flag = 1;
+					return 1;
+				}
 				if (req.path == file.getLocation()[i].getPath())
 				{
 					flag = 1;

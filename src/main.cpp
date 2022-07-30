@@ -9,9 +9,12 @@ int	main()
 		std::cout << conf.getServers()[i].getPort() << "\n";
 		for (size_t j = 0; j < conf.getServers()[i].getLocation().size(); j++)
 		{
-			std::cout << conf.getServers()[i].getLocation()[j].getMethod() << " ";
-			std::cout << conf.getServers()[i].getLocation()[j].getPath() << " ";
-			std::cout << conf.getServers()[i].getLocation()[j].getRoot() << " ";
+			std::cout << "Location " << j + 1 << '\n';
+			std::cout << "Method = " << conf.getServers()[i].getLocation()[j].getMethod() << " ";
+			std::cout << "Path = " << conf.getServers()[i].getLocation()[j].getPath() << " ";
+			std::cout << "Root = " << conf.getServers()[i].getLocation()[j].getRoot() << " ";
+			std::cout << "Server_name = " << conf.getServers()[i].getLocation()[j].getName() << " ";
+			std::cout << "\n";
 		}
 		std::cout << "\n";
 	}

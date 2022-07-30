@@ -48,6 +48,8 @@ void	Request::parse_header()
 	}
 	for (size_t i = 0; i < parsed.size(); ++i)
 	{
+		if (parsed[i] == "server_name:")
+			Server_name = parsed[i + 1];
 		if (parsed[i] == "Connection:")
 			Connection = parsed[i + 1];
 		if (parsed[i] == "Content-Length:")
@@ -63,11 +65,6 @@ void	Request::parse_header()
 }
 
 Request::~Request(){}
-
-// void	Request::parse_body()
-// {
-// 	start();
-// }
 
 void	Request::parse_body()
 {
@@ -95,6 +92,7 @@ void	Request::init()
 	req_status = HEADER;
 	status = DEFAULT;
 	state = CLIENT_DEFAULT;
+	Server_name = "";
 }
 
 void	Request::get_body_chunked()

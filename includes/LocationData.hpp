@@ -18,19 +18,22 @@ class LocationData
 	std::string path;
 	std::string root;
 	std::string method;
+	std::string server_name;
 
 	public:
 		LocationData();
-		LocationData(std::string& path_, std::string &root_, std::string &method_);
+		LocationData(std::string& path_, std::string &root_, std::string &method_, std::string& name);
 		~LocationData();
 
 		void setPath(const std::string &path);
 		void setRoot(const std::string &root);
 		void setMethod(const std::string &method);
+		void setName(const std::string &name);
 
 		std::string getMethod() const;
 		std::string getRoot() const;
 		std::string getPath() const;
+		std::string getName() const;
 };
 
 #endif
