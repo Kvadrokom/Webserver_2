@@ -19,21 +19,24 @@ class LocationData
 	std::string root;
 	std::string method;
 	std::string server_name;
+	int			max_body;
 
 	public:
 		LocationData();
-		LocationData(std::string& path_, std::string &root_, std::string &method_, std::string& name);
+		// LocationData(std::string& path_, std::string &root_, std::string &method_, std::string& name);
 		~LocationData();
 
 		void setPath(const std::string &path);
 		void setRoot(const std::string &root);
 		void setMethod(const std::string &method);
 		void setName(const std::string &name);
+		void setMaxBody(int max_body);
 
 		std::string getMethod() const;
 		std::string getRoot() const;
 		std::string getPath() const;
 		std::string getName() const;
+		int			getMaxBody() const;
 };
 
 #endif

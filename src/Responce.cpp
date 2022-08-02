@@ -24,6 +24,12 @@ std::string	responce_code(int state)
 	case OK_200_POST:
 		content = "<h1>Succesfully post file</h1>";
 		break;
+	case REQUEST_ENTITY_TOO_LARGE_413:
+		content =  "<h1>413 Request Entity Too Large</h1>";
+		break;
+	case NOT_ALLOWED_405:
+		content =  "<h1>413 Method Not Allowed </h1>";
+		break;
 	default:
 		break;
 	}
@@ -50,18 +56,36 @@ void	Responce::start(ServerParam &file, Request& req)
 		{
 			Responce_del(req);
 		}
+		return;
 	}
-	else
-		bad_request();
+	else if (req.status == DEFAULT)
+	{
+		code_number = 405;
+		req.status = NOT_ALLOWED_405;
+	}
+	bad_request(req);	
 }
 
-void	Responce::bad_request()
-{
-	req.status = NOT_FOUND_404;
+void	Responce::bad_request(Request& req)
+{	
 	content = ::responce_code(req.status);
-	state = READY;
-	code_number = 404;
+	state = READY;	
 	make_answer();
+}
+
+int	Responce::check_entity(ServerParam &file, Request& req, int i)
+{
+	int max_body = file.getLocation()[i].getMaxBody();
+	if (req.method == "POST")
+	{
+		if (max_body != -1 && (size_t)max_body <= req.body.size())
+		{
+			code_number = 413;
+			req.status = REQUEST_ENTITY_TOO_LARGE_413;
+			return 0;
+		}	
+	}
+	return 1;
 }
 
 int	Responce::check_req(ServerParam &file, Request& req)
@@ -73,10 +97,9 @@ int	Responce::check_req(ServerParam &file, Request& req)
 		{
 			if (req.method == "GET")
 			{
-				if (req.path == file.getLocation()[i].getName())
+				if (req.host == file.getLocation()[i].getName())
 				{
-					flag = 1;
-					return 1;
+					
 				}
 				if (req.path == file.getLocation()[i].getPath())
 				{
@@ -86,18 +109,23 @@ int	Responce::check_req(ServerParam &file, Request& req)
 			}
 			else
 			{
-				std::cout << req.path.substr(0, 7) << '\n';
-				if (req.path.substr(0, 7) == "/common")
-				{					
-					flag = 1;
-					return 1;
-				}
-				else if (req.path == "/")
+				std::cout << req.path.substr(0, 7) << '\n';    			/*TO DO*/
+				if (check_entity(file, req, i))
 				{
-					req.path = "/common/file";
-					flag = 1;
-					return 1;
+					if (req.path.substr(0, 7) == "/common")
+					{					
+						flag = 1;
+						return 1;
+					}
+					else if (req.path == "/")
+					{
+						req.path = "/common/file";
+						flag = 1;
+						return 1;
+					}
 				}
+				else
+					return 0;
 			}
 		}
 	}

@@ -55,7 +55,7 @@ struct Request
 	std::string					header;
 	std::string					body;
 	std::string					chunked_body;
-	std::string					Server_name;
+	std::string					host;
 
 	void	recieve(std::vector<std::string>& arr, std::string& str);
 	Request();

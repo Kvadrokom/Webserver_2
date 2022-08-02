@@ -10,7 +10,7 @@ void	Request::recieve(std::vector<std::string>& arr, std::string& str)
 	this->buf = str;
 	size_t pos;
 
-	std::cout << "sendto = " << sendto << "\nreq_status = " << req_status << "\n\n";
+	std::cout << "sendto = " << sendto << "\nreq_status = " << req_status << "\n\n";    /*TO DO*//*TO DO*//*TO DO*/
 
 	if ((pos = sendto.find(CRLF_CRLF)) != std::string::npos)
 	{
@@ -19,26 +19,28 @@ void	Request::recieve(std::vector<std::string>& arr, std::string& str)
 		{
 	 		req_status = BODY;
 			header = sendto.substr(0, pos + 4);
-			std::cout << "Header = " << header << "\nreq_status = " << req_status << "\n";
+			std::cout << "Header = " << header << "\nreq_status = " << req_status << "\n";  /*TO DO*//*TO DO*/
 			parse_header();
 		}
 		if (req_status == BODY && method == "POST")
 			parse_body();
 	}
-	std::cout << "count = " << count << "\n";
+	std::cout << "count = " << count << "\n";										/*TO DO*//*TO DO*//*TO DO*/
 }
 
 void	Request::parse_header()
 {
-	ft_toupper((method = arr[0]));
-	ft_toupper((path = arr[1]));
-	ft_toupper(arr[2]);
+	// ft_toupper((method = arr[0]));
+	// ft_toupper((path = arr[1]));
+	// ft_toupper(arr[2]);
 	
 	std::istringstream iss(header.c_str());
 	std::vector<std::string> parsed((std::istream_iterator<std::string>(iss)),
 									std::istream_iterator<std::string>());
 	ft_toupper((method = parsed[0]));
-	ft_toupper((path = parsed[1]));
+	path = parsed[1];
+	if (path.find('?') != std::string::npos)
+		path = path.substr(0, path.find('?'));
 	ft_toupper(parsed[2]);
 	if (parsed[2] != "HTTP/1.1" || allowed_req(method))
 	{
@@ -48,8 +50,8 @@ void	Request::parse_header()
 	}
 	for (size_t i = 0; i < parsed.size(); ++i)
 	{
-		if (parsed[i] == "server_name:")
-			Server_name = parsed[i + 1];
+		if (parsed[i] == "Host:")
+			host = parsed[i + 1];
 		if (parsed[i] == "Connection:")
 			Connection = parsed[i + 1];
 		if (parsed[i] == "Content-Length:")
@@ -74,7 +76,7 @@ void	Request::parse_body()
 		get_body_length();
 	else
 	{
-		state = CLIENT_TERMINATED;
+		state = CLIENT_RECEIVE_REQUEST;
 		status = BAD_REQUEST_400;
 		return;
 	}
@@ -92,7 +94,7 @@ void	Request::init()
 	req_status = HEADER;
 	status = DEFAULT;
 	state = CLIENT_DEFAULT;
-	Server_name = "";
+	host = "";
 }
 
 void	Request::get_body_chunked()

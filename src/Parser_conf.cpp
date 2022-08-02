@@ -72,6 +72,8 @@ void	Parser_conf::parser_location()
 					loc[j].setMethod(pars[x + 1]);
 				else if (pars[x] == "server_name")
 					loc[j].setName(pars[x + 1]);
+				else if (pars[x] == "max_body")
+					loc[j].setMaxBody(atoi(pars[x + 1].c_str()));
 			}
 			j++;
 		}

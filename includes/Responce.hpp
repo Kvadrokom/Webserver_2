@@ -39,7 +39,8 @@ struct Responce
 	void	Responce_get(Request& req);
 	void	Responce_post(Request& req);
 	void	Responce_del(Request& req);
-	void 	bad_request();
+	int		check_entity(ServerParam &file, Request& req, int i);
+	void 	bad_request(Request& req);
 	void	make_answer();
 	void	init();
 };
