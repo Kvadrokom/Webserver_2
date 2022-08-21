@@ -19,7 +19,7 @@ int	main()
 		std::cout << "\n";
 	}
 	
-	Http_server server(10, conf);
+	Http_server server(100, conf);
 	if (server.setServ(conf))
 		server.launch();
 	return 0;

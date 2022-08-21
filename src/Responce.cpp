@@ -99,7 +99,8 @@ int	Responce::check_req(ServerParam &file, Request& req)
 			{
 				if (req.host == file.getLocation()[i].getName())
 				{
-					
+					flag = 1;
+					return 1;
 				}
 				if (req.path == file.getLocation()[i].getPath())
 				{
