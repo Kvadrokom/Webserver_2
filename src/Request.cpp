@@ -136,7 +136,7 @@ void	Request::get_body_length()
 void	ft_toupper(std::string& str)
 {
 	for (size_t i = 0; i < str.size(); i++)
-		toupper(str.c_str()[i]);
+		str[i] = toupper(str.c_str()[i]);
 }
 
 int		allowed_req(std::string& str)

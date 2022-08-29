@@ -3,7 +3,11 @@
 
 
 #include "LocationData.hpp"
+#include <iostream>
+#include <sstream>
+#include <iterator>
 #include "ServerParam.hpp"
+#include <cstdlib>
 
 class Parser_conf
 {

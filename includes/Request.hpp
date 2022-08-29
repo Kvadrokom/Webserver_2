@@ -1,6 +1,7 @@
 #ifndef REQUEST_H
 #define REQUEST_H
 
+#include <iterator>
 #include <map>
 #include <list>
 #include <stddef.h>
