@@ -2,28 +2,53 @@
 #include "Request.hpp"
 #include "Responce.hpp"
 
-int	Http_server::setServ(Parser_conf &conf)
+// int	Http_server::setServ(Parser_conf &conf)
+// {
+// 	if (conf.get_servsize())
+// 	{
+// 		for (size_t i = 0; i < conf.get_servsize(); i++)
+// 		{
+// 			Server *serv = new Server(conf.getServers()[i].getPort());
+// 			server_pull.push_back(serv);
+// 			if (serv->setup(backlog))
+// 			{
+// 				if (mx < serv->getSock())
+// 					mx = serv->getSock();
+// 				servers.insert(std::make_pair(serv->getSock(), conf.getServers()[i]));
+// 			}
+// 		}
+// 		return 1;
+// 	}
+// 	return 0;		
+// }
+
+int	Http_server::setServ()
 {
-	if (conf.get_servsize())
-	{
-		for (size_t i = 0; i < conf.get_servsize(); i++)
-		{
-			Server *serv = new Server(conf.getServers()[i].getPort());
-			server_pull.push_back(serv);
-			if (serv->setup(backlog))
-			{
-				if (mx < serv->getSock())
-					mx = serv->getSock();
-				servers.insert(std::make_pair(serv->getSock(), conf.getServers()[i]));
-			}
-		}
-		return 1;
-	}
-	return 0;		
+	LocationData* loc = new LocationData();
+	loc->setMaxBody(100);
+	loc->setMethod("GET");
+	loc->setName("Name");
+	loc->setPath("/");
+	loc->setRoot("www");
+	std::vector<LocationData> vec;
+	vec.push_back(*loc);
+	Server *serv = new Server(8000); 
+	ServerParam* sp = new ServerParam(8000, vec);
+	servers.insert(std::make_pair(8000, *sp));
+	return 1;
 }
 
 Http_server::Http_server(int backlog, const Parser_conf& conf): mx(0), backlog(backlog), conf(conf)
 {	
+	clear();
+	clear_set();
+	clients.clear();
+}
+
+Http_server::Http_server()
+{
+	mx = 0;
+	backlog = 100;
 	clear();
 	clear_set();
 	clients.clear();

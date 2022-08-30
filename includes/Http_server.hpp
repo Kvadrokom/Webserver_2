@@ -28,7 +28,9 @@ private:
 
 public:
 	Http_server(int backlog, const Parser_conf& conf);
-	int	setServ(Parser_conf &conf);
+	int	setServ();
+	// int	setServ(Parser_conf &conf);
+	Http_server();
 	~Http_server();
 	void clear();
 	void launch();
