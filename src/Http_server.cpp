@@ -34,7 +34,7 @@ int	Http_server::setServ()
 	vec.push_back(*loc);
 	Server *serv = new Server(8000); 
 	ServerParam* sp = new ServerParam(8000, vec);
-	servers.insert(std::make_pair(8000, *sp));
+	servers.insert(std::make_pair(serv->getSock(), *sp));
 	return 1;
 }
 
