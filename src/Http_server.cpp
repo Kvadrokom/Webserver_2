@@ -74,15 +74,15 @@ void Http_server::launch()
 		clear_set();
 		for (std::map<int, ServerParam>::iterator it = servers.begin(); it != servers.end(); ++it)
 			FD_SET(it->first, &readset);
-		for(std::list<Client>::iterator it = clients.begin(); it != clients.end(); it++)
+		for(std::list<Client*>::iterator it = clients.begin(); it != clients.end(); it++)
 		{
 			// FD_SET(it->fd, &readset);
-			if (it->answer.state == READY)
-				FD_SET(it->fd, &writeset);
+			if ((*it)->answer.state == READY)
+				FD_SET((*it)->fd, &writeset);
 			else
-				FD_SET(it->fd, &readset);
-			if (it->fd > max)
-				max = it->fd;
+				FD_SET((*it)->fd, &readset);
+			if ((*it)->fd > max)
+				max = (*it)->fd;
 		}
 
 		/**********************************SELECT****************************************/
@@ -104,64 +104,66 @@ void Http_server::launch()
 					return;
 				}
 				fcntl(new_socket, F_SETFL, O_NONBLOCK);
-				Client *cl = new Client(it->first, new_socket, it->second);
-				clients.push_back(*cl);
+				Client *cl = new Client(it->first, new_socket, it->second);				
+				clients.push_back(cl);
 			}
 		}
-		for(std::list<Client>::iterator it = clients.begin(); it != clients.end(); it++)
+		for(std::list<Client*>::iterator it = clients.begin(); it != clients.end(); it++)
 		{
-			if(FD_ISSET(it->fd, &readset))
+			if(FD_ISSET((*it)->fd, &readset))
 			{
 				// Поступили данные от клиента, читаем их
-				int bytes_read = recv(it->fd, it->accept, 1024, 0);
-				it->accept[bytes_read] = '\0';
-				std::cout << "fd = " << it->fd << " , bytes = " << bytes_read << std::endl;
-				std::string temp = it->accept;
+				int bytes_read = recv((*it)->fd, (*it)->accept, 1024, 0);
+				(*it)->accept[bytes_read] = '\0';
+				std::cout << "fd = " << (*it)->fd << " , bytes = " << bytes_read << std::endl;
+				std::string temp = (*it)->accept;
 				std::cout << "Reading = " << temp << std::endl << std::endl;
 				temp = "";
 				if (bytes_read <= 0)
 				{
 					// Соединение разорвано, удаляем сокет из множества
-					close(it->fd);
+					close((*it)->fd);
+					delete *it;
 					clients.erase(it);
 					continue;
 				}
-				it->recieve_req(it->accept);
-				it->init();
-				it->req.state = CLIENT_START;
-				it->req.recieve(it->arr, it->buffer);
-				if (it->req.state == CLIENT_RECEIVE_REQUEST)
+				(*it)->recieve_req((*it)->accept);
+				(*it)->init();
+				(*it)->req.state = CLIENT_START;
+				(*it)->req.recieve((*it)->arr, (*it)->buffer);
+				if ((*it)->req.state == CLIENT_RECEIVE_REQUEST)
 				{
-					it->answer.start(it->param, it->req);
-					it->req.sendto = "";
-					std::cout << "Responce = " << it->answer.response_ << "\n\n";
+					(*it)->answer.start((*it)->param, (*it)->req);
+					(*it)->req.sendto = "";
+					std::cout << "Responce = " << (*it)->answer.response_ << "\n\n";
 				}
 			}
-			if(FD_ISSET(it->fd, &writeset))
+			if(FD_ISSET((*it)->fd, &writeset))
 			{
-				size_t result = send(it->fd, it->answer.response_.c_str(),
-							it->answer.response_.length(), 0);
+				size_t result = send((*it)->fd, (*it)->answer.response_.c_str(),
+							(*it)->answer.response_.length(), 0);
 				if (result < 0)
 				{
 					// произошла ошибка при отправле данных
 					std::cerr << "send failed: " << "\n";
 				}
-				if (result >= it->answer.response_.length())
+				if (result >= (*it)->answer.response_.length())
 				{
-					it->answer.state = DONE;
-					std::cout << "req.Connection = "  << it->req.Connection << '\n';
-					if (it->req.Connection == "close")
+					(*it)->answer.state = DONE;
+					std::cout << "req.Connection = "  << (*it)->req.Connection << '\n';
+					if ((*it)->req.Connection == "close")
 					{
-						close(it->fd);
+						close((*it)->fd);
+						delete *it;
 						clients.erase(it);
 					}
-					it->req.init();
-					it->answer.init();
+					(*it)->req.init();
+					(*it)->answer.init();
 				}
 				else
 				{
-					it->answer.response_.substr(result);
-					it->req.init();
+					(*it)->answer.response_.substr(result);
+					(*it)->req.init();
 				}
 			}
 		}

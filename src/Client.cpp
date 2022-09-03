@@ -1,6 +1,6 @@
 #include "Client.hpp"
 
-Client::Client(int sock, int fd, const ServerParam& param) : sock(sock), fd(fd), req(), param(param), buffer()
+Client::Client(int sock, int fd, const ServerParam& param) : sock(sock), arr(), fd(fd), req(), param(param), buffer()
 {
 	init();
 }

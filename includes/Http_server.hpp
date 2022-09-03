@@ -13,7 +13,7 @@ class Http_server
 private:
 	char						arr[1024];
 	int							new_socket;
-	std::list<Client> 			clients;
+	std::list<Client*>			clients;
 	std::map<int, ServerParam> 	servers;
 	fd_set 						readset;
 	fd_set 						writeset;
