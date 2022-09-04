@@ -6,6 +6,8 @@
 #include "Parser_conf.hpp"
 #include "LocationData.hpp"
 #include "ServerParam.hpp"
+#include <sstream>
+#include <iterator>
 
 class Http_server
 {

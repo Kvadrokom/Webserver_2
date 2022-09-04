@@ -4,6 +4,8 @@
 
 #include "LocationData.hpp"
 #include "ServerParam.hpp"
+#include <sstream>
+#include <iterator>
 
 class Parser_conf
 {

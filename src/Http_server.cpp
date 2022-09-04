@@ -18,7 +18,7 @@ int	Http_server::setServ(Parser_conf &conf)
 	return 1;
 }
 
-Http_server::Http_server(int backlog, const Parser_conf& conf): mx(0), backlog(backlog), conf(conf)
+Http_server::Http_server(int backlog, const Parser_conf& conf): clients(), mx(0), backlog(backlog), conf(conf)
 {	
 	clear();
 	FD_ZERO(&masterset);
@@ -67,8 +67,8 @@ void Http_server::launch()
 				{
 					// Соединение разорвано, удаляем сокет из множества
 					close(it->fd);
-					clients.erase(*it);
 					FD_CLR(it->fd, &masterset);
+					clients.erase(*it);
 					continue;
 				}
 				handler(it->fd);
