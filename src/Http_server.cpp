@@ -22,7 +22,7 @@ int	Http_server::setServ(Parser_conf &conf)
 	return 0;		
 }
 
-Http_server::Http_server(int backlog, const Parser_conf& conf): mx(0), backlog(backlog), conf(conf)
+Http_server::Http_server(int backlog, const Parser_conf& conf): clients(), mx(0), backlog(backlog), conf(conf)
 {	
 	clear();
 	clear_set();
