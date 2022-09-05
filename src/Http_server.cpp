@@ -43,14 +43,14 @@ int	Http_server::setServ()
 	return 1;
 }
 
-Http_server::Http_server(int backlog, const Parser_conf& conf): mx(0), backlog(backlog), conf(conf)
+Http_server::Http_server(int backlog, const Parser_conf& conf): clients(), mx(0), backlog(backlog), conf(conf)
 {	
 	clear();
 	clear_set();
 	clients.clear();
 }
 
-Http_server::Http_server()
+Http_server::Http_server():clients()
 {
 	mx = 0;
 	backlog = 100;
@@ -77,7 +77,13 @@ void Http_server::launch()
 		for(std::list<Client*>::iterator it = clients.begin(); it != clients.end(); it++)
 		{
 			// FD_SET(it->fd, &readset);
-			if ((*it)->answer.state == READY)
+			if ((*it)->answer.state == CLOSE)
+			{
+				close((*it)->fd);
+				delete *it;
+				clients.erase(it);
+			}
+			else if ((*it)->answer.state == READY)
 				FD_SET((*it)->fd, &writeset);
 			else
 				FD_SET((*it)->fd, &readset);
@@ -121,11 +127,12 @@ void Http_server::launch()
 				temp = "";
 				if (bytes_read <= 0)
 				{
+					(*it)->answer.state = CLOSE;
 					// Соединение разорвано, удаляем сокет из множества
-					close((*it)->fd);
-					delete *it;
-					clients.erase(it);
-					continue;
+					// close((*it)->fd);
+					// delete *it;
+					// clients.erase(it);
+					// continue;
 				}
 				(*it)->recieve_req((*it)->accept);
 				(*it)->init();
@@ -153,9 +160,10 @@ void Http_server::launch()
 					std::cout << "req.Connection = "  << (*it)->req.Connection << '\n';
 					if ((*it)->req.Connection == "close")
 					{
-						close((*it)->fd);
-						delete *it;
-						clients.erase(it);
+						(*it)->answer.state = CLOSE;
+						// close((*it)->fd);
+						// delete *it;
+						// clients.erase(it);
 					}
 					(*it)->req.init();
 					(*it)->answer.init();

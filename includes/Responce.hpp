@@ -17,7 +17,8 @@ enum STATE
 	START,
 	PREPARING,
 	READY,
-	DONE
+	DONE,
+	CLOSE
 };
 
 struct Responce
