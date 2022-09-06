@@ -5,6 +5,9 @@
 #include <netinet/in.h>
 #include <stdio.h>
 #include <iostream>
+#include <cstdlib>
+#include <algorithm>
+#include <iterator>
 
 class ASocket
 {

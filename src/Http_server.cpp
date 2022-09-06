@@ -71,12 +71,12 @@ void Http_server::accepter()
 			if (bytes_read <= 0 && *it != sock_sv)
 			{
 				// Соединение разорвано, удаляем сокет из множества
+				FD_CLR(*it, &readset);
 				close(*it);
 				clients.erase(*it);
-				FD_CLR(*it, &readset);
 				continue;
 			}
-			if (*it != sock_sv)
+			else if (*it != sock_sv)
 			{
 				handler(*it);
 				// responder(*it);
