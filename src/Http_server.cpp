@@ -124,8 +124,11 @@ void Http_server::launch()
 						close(it->fd);
 						clients.erase(it);
 					}
-					it->req.init();
-					it->answer.init();
+					else
+					{
+						it->req.init();
+						it->answer.init();
+					}
 				}
 				else
 				{
