@@ -36,9 +36,16 @@ std::string	responce_code(int state)
 	return content;
 }
 
+Responce::~Responce()
+{
+	std::cout <<"Call destructor from Responce\n\n";
+}
 
 Responce::Responce():head(""), body(""), responce_code(""),
-		content(""), response_(""), www(""), state(START), code_number(0) {};
+		content(""), response_(""), www(""), state(START), code_number(0) 
+{
+	std::cout <<"Call default constructor from Responce\n\n";
+};
 
 void	Responce::start(ServerParam &file, Request& req)
 {

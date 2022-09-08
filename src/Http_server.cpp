@@ -45,7 +45,7 @@ int	Http_server::setServ()
 	return 1;
 }
 
-Http_server::Http_server(int backlog, const Parser_conf& conf): clients(), mx(0), backlog(backlog), conf(conf)
+Http_server::Http_server(int backlog, const Parser_conf& conf): clients(), servers(), mx(0), backlog(backlog), conf(conf)
 {
 	std::cout << "Calling constructor with parametres\n";
 	clear();
@@ -53,9 +53,9 @@ Http_server::Http_server(int backlog, const Parser_conf& conf): clients(), mx(0)
 	clients.clear();
 }
 
-Http_server::Http_server():clients()
+Http_server::Http_server():clients(), servers()
 {
-	std::cout << "Calling constructor default\n";
+	std::cout << "Calling default constructor from  Http_server default\n\n";
 	mx = 0;
 	backlog = 100;
 	clear();
@@ -212,7 +212,7 @@ void Http_server::launch()
 
 Http_server::~Http_server()
 {
-	std::cout << "Calling destructor\n";
+	std::cout << "Calling destructor from Http_server\n\n";
 	for (size_t i = 0; i < server_pull.size(); i++)
 	{
 		delete server_pull[i];

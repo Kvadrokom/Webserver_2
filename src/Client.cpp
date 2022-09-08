@@ -2,11 +2,13 @@
 
 Client::Client(int sock, int fd, const ServerParam& param) : sock(sock), arr(), fd(fd), req(), param(param), buffer()
 {
+	std::cout << "Call constructor from Client\n\n";
 	init();
 }
 
 Client::Client():sock(-1), fd(-1)
 {
+	std::cout << "Call default constructor from Client\n\n";
 	init();
 }
 
@@ -20,6 +22,11 @@ void	Client::recieve_req(std::string str)
 }
 
 bool Client::operator < (const Client c) const { return fd < c.fd; }
+
+Client::~Client()
+{
+	std::cout <<"Call destructor from Client\n\n";
+}
 
 void Client::init()
 {

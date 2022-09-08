@@ -1,10 +1,13 @@
 #include "LocationData.hpp"
 
-LocationData::LocationData():path(), root(), method(), server_name(), max_body(-1){};
+LocationData::LocationData():path(), root(), method(), server_name(), max_body(-1)
+{
+	std::cout <<"Call default constructor from LocationData\n\n";
+};
 
 // LocationData::LocationData(){};
 
-LocationData::~LocationData(){};
+LocationData::~LocationData(){std::cout <<"Call destructor from LocationData\n\n";};
 
 void LocationData::setPath(const std::string &path_){ path = path_; }
 void LocationData::setName(const std::string &name){ server_name = name; }

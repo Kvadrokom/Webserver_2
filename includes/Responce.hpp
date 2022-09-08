@@ -33,7 +33,8 @@ struct Responce
 	int					code_number;
 	Request 			req;
 
-	Responce();	
+	Responce();
+	~Responce();
 
 	void 	start(ServerParam &file, Request& req);
 	int		check_req(ServerParam &file, Request& req);

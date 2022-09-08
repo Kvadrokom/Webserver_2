@@ -24,6 +24,8 @@ struct Client
 	std::string					buffer;
 	Client();
 	Client(int sock, int fd, const ServerParam& param);
+	~Client();
+	
 	void recieve_req(std::string str);
 	bool operator<(const Client c) const;
 	void init();

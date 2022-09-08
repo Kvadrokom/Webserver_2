@@ -1,6 +1,10 @@
 #include "Request.hpp"
 
-Request::Request(): arr() { init(); }
+Request::Request(): arr()
+ { 
+	init();
+	std::cout <<"Call default constructor from Request\n\n";
+}
 
 void	Request::recieve(std::vector<std::string>& arr, std::string& str)
 {
@@ -66,7 +70,7 @@ void	Request::parse_header()
 		state = CLIENT_RECEIVE_REQUEST;
 }
 
-Request::~Request(){}
+Request::~Request(){std::cout <<"Call destructor from Request\n\n";}
 
 void	Request::parse_body()
 {

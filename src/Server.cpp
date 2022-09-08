@@ -14,6 +14,7 @@ bool	Server::make_nonblocking(int sock)
 Server::Server(int port)
 {
 	this->port = port;
+	std::cout <<"Call constructor from Server\n\n";
 }
 
 int	Server::setup(int backlog)
@@ -36,4 +37,4 @@ int	Server::setup(int backlog)
 
 int Server::getSock() const { return sock; }
 
-Server::~Server(){};
+Server::~Server(){std::cout <<"Call destructor from Server\n\n";};
