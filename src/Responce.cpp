@@ -97,16 +97,18 @@ int	Responce::check_req(ServerParam &file, Request& req)
 		{
 			if (req.method == "GET")
 			{
-				if (req.host == file.getLocation()[i].getName())
-				{
-					flag = 1;
-					return 1;
-				}
-				if (req.path == file.getLocation()[i].getPath())
-				{
-					flag = 1;
-					return 1;
-				}
+				// if (req.host == file.getLocation()[i].getName())
+				// {
+				// 	flag = 1;
+				// 	return 1;
+				// }
+				// if (req.path == file.getLocation()[i].getPath())
+				// {
+				// 	flag = 1;
+				// 	return 1;
+				// }
+				flag = 1;
+				return 1;
 			}
 			else
 			{
@@ -152,9 +154,9 @@ void	Responce::Responce_get(Request& req)
 	}
 	else
 	{
-		req.status = INTERNAL_SERVER_ERROR_500;
+		req.status = NOT_FOUND_404;
 		content = ::responce_code(req.status);
-		code_number = 500;
+		code_number = 404;
 	}
 	state = READY;
 	make_answer();

@@ -62,7 +62,9 @@ void	Request::parse_header()
 			Content_Length = 0;
 		}	
 	}
-	if (method == "GET" || method == "DELETE")
+	if (method != "GET" && method != "DELETE" && method != "POST")
+		state = CLIENT_RECEIVE_REQUEST;
+	else if (method == "GET" || method == "DELETE")
 		state = CLIENT_RECEIVE_REQUEST;
 }
 
