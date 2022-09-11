@@ -93,42 +93,45 @@ int	Responce::check_req(ServerParam &file, Request& req)
 	size_t flag = 0;
 	for (size_t i = 0; i < file.getLocation().size(); i++)
 	{
-		if (req.method == file.getLocation()[i].getMethod())
-		{
-			if (req.method == "GET")
+		for (size_t j = 0; j < file.getLocation()[i].getMethod().size(); j++)
+		{		
+			if (req.method == file.getLocation()[i].getMethod()[j])
 			{
-				// if (req.host == file.getLocation()[i].getName())
-				// {
-				// 	flag = 1;
-				// 	return 1;
-				// }
-				// if (req.path == file.getLocation()[i].getPath())
-				// {
-				// 	flag = 1;
-				// 	return 1;
-				// }
-				flag = 1;
-				return 1;
-			}
-			else
-			{
-				std::cout << req.path.substr(0, 7) << '\n';    			/*TO DO*/
-				if (check_entity(file, req, i))
+				if (req.method == "GET")
 				{
-					if (req.path.substr(0, 7) == "/common")
-					{					
-						flag = 1;
-						return 1;
-					}
-					else if (req.path == "/")
-					{
-						req.path = "/common/file";
-						flag = 1;
-						return 1;
-					}
+					// if (req.host == file.getLocation()[i].getName())
+					// {
+					// 	flag = 1;
+					// 	return 1;
+					// }
+					// if (req.path == file.getLocation()[i].getPath())
+					// {
+					// 	flag = 1;
+					// 	return 1;
+					// }
+					flag = 1;
+					return 1;
 				}
 				else
-					return 0;
+				{
+					std::cout << req.path.substr(0, 7) << '\n';    			/*TO DO*/
+					if (check_entity(file, req, i))
+					{
+						if (req.path.substr(0, 7) == "/common")
+						{					
+							flag = 1;
+							return 1;
+						}
+						else if (req.path == "/")
+						{
+							req.path = "/common/file";
+							flag = 1;
+							return 1;
+						}
+					}
+					else
+						return 0;
+				}
 			}
 		}
 	}

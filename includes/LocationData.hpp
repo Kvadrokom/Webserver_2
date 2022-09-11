@@ -15,11 +15,11 @@
 
 class LocationData
 {
-	std::string path;
-	std::string root;
-	std::string method;
-	std::string server_name;
-	int			max_body;
+	std::string 				path;
+	std::string 				root;
+	std::vector <std::string> 	method;
+	std::string 				server_name;
+	int							max_body;
 
 	public:
 		LocationData();
@@ -32,11 +32,11 @@ class LocationData
 		void setName(const std::string &name);
 		void setMaxBody(int max_body);
 
-		std::string getMethod() const;
-		std::string getRoot() const;
-		std::string getPath() const;
-		std::string getName() const;
-		int			getMaxBody() const;
+		std::vector <std::string> 	getMethod() const;
+		std::string 				getRoot() const;
+		std::string 				getPath() const;
+		std::string 				getName() const;
+		int							getMaxBody() const;
 };
 
 #endif
