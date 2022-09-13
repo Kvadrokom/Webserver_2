@@ -94,7 +94,8 @@ int	Responce::check_req(ServerParam &file, Request& req)
 	for (size_t i = 0; i < file.getLocation().size(); i++)
 	{
 		for (size_t j = 0; j < file.getLocation()[i].getMethod().size(); j++)
-		{		
+		{
+			std::cout << file.getLocation()[i].getMethod()[j] << "\n\n";	
 			if (req.method == file.getLocation()[i].getMethod()[j])
 			{
 				if (req.method == "GET")
