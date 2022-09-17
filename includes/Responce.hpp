@@ -28,6 +28,7 @@ struct Responce
 	std::string 		content;
 	std::string 		response_;
 	std::string 		www;
+	std::string 		root;
 	STATE 				state;
 	int					code_number;
 	Request 			req;

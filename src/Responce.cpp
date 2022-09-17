@@ -38,7 +38,7 @@ std::string	responce_code(int state)
 
 
 Responce::Responce():head(""), body(""), responce_code(""),
-		content(""), response_(""), www(""), state(START), code_number(0) {};
+		content(""), response_(""), www(""), root(""), state(START), code_number(0) {};
 
 void	Responce::start(ServerParam &file, Request& req)
 {
@@ -95,9 +95,10 @@ int	Responce::check_req(ServerParam &file, Request& req)
 	{
 		for (size_t j = 0; j < file.getLocation()[i].getMethod().size(); j++)
 		{
-			std::cout << file.getLocation()[i].getMethod()[j] << "\n\n";	
+			std::cout << file.getLocation()[i].getMethod()[j] << "\n\n";	/*TO DO*/
 			if (req.method == file.getLocation()[i].getMethod()[j])
 			{
+				root = file.getLocation()[i].getRoot();
 				if (req.method == "GET")
 				{
 					// if (req.host == file.getLocation()[i].getName())
@@ -110,6 +111,7 @@ int	Responce::check_req(ServerParam &file, Request& req)
 					// 	flag = 1;
 					// 	return 1;
 					// }
+					std::cout << "root = " << root << '\n';					/*TO DO*/
 					flag = 1;
 					return 1;
 				}
@@ -144,10 +146,11 @@ void	Responce::Responce_get(Request& req)
 	// std::stringstream response; // сюда будет записываться ответ клиенту
 	// code_number = 404;
 	// content = "<h1>404 Not Found</h1>";
-	if (req.path != "" && req.path != "/")
-		www = "www" + req.path + "/index.html";
+	if (req.path != "" && root != "www")
+		www = "www/" + root + "/index.html";
 	else
 		www = "www/index.html";
+	std::cout << "www = " << www << "\n\n";									/*TO DO*/
 	std::ifstream f(www.c_str());
 	std::cout << www.c_str() << '\n';
 	if (f.good() /*|| req.path == "/my_foto.jpg" */)
@@ -168,7 +171,7 @@ void	Responce::Responce_get(Request& req)
 
 void	Responce::Responce_del(Request& req)
 {
-	www = "www" + req.path;
+	www = "www" + root;
 	if (std::remove(www.c_str()))
 	{
 		req.status = BAD_REQUEST_400;
@@ -188,7 +191,7 @@ void	Responce::Responce_del(Request& req)
 void	Responce::Responce_post(Request& req)
 {
 	std::string file = req.chunked_body + req.body;
-	www =  "www" + req.path;
+	www =  "www" + root;
 	std::ofstream out(www.c_str());
 	if (out.good())
 	{
@@ -223,6 +226,7 @@ void	Responce::make_answer()
 void	Responce::init()
 {
 	head = "";
+	root = "";
 	body = "";
 	responce_code = "";
 	content = "";
