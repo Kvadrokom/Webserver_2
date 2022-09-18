@@ -147,10 +147,10 @@ void	Responce::Responce_get(Request& req)
 	// code_number = 404;
 	// content = "<h1>404 Not Found</h1>";
 	if (req.path != "" && root != "www")
-		www = "www/" + root + "/index.html";
+		www = "www/" + root + req.path + "index.html";
 	else
-		www = "www/index.html";
-	std::cout << "www = " << www << "\n\n";									/*TO DO*/
+		www = "www" + req.path + "index.html";
+	std::cout << "www = " << www << "153" <<"\n\n";									/*TO DO*/
 	std::ifstream f(www.c_str());
 	std::cout << www.c_str() << '\n';
 	if (f.good() /*|| req.path == "/my_foto.jpg" */)
