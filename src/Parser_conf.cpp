@@ -12,10 +12,21 @@ Parser_conf::Parser_conf(const char* conf):servers(0), pars(), loc_size(0), serv
 		this->pars = parse;
 		for (unsigned long k = 0; k < pars.size(); k++)
 		{
+			int flag = 0;
 			if (pars[k] == "location")
 				loc_size++;
 			else if (pars[k] == "server")
 				serv_size++;
+			else if (pars[k] == "error_page")
+			{
+				flag = 1;
+				error_page = pars[k + 1];
+			}
+			if (flag == 0)
+			{
+				std::cout << "Fatal: error page not present\n";
+				exit(1);
+			}
 		}
 		servers = new ServerParam[serv_size];
 		loc = new LocationData[loc_size];

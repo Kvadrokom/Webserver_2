@@ -16,6 +16,7 @@ class Parser_conf
 	size_t						loc_size;
 	size_t						serv_size;
 	LocationData*				loc;
+	std::string					error_page;
 	
 
 	public:
