@@ -11,16 +11,17 @@
 class Http_server
 {
 private:
-	char						arr[1024];
-	int							new_socket;
-	std::list<Client> 			clients;
-	std::map<int, ServerParam> 	servers;
-	fd_set 						readset;
-	fd_set 						writeset;
-	int							mx;
-	int							backlog;
-	Parser_conf					conf;
-	std::vector<Server *>		server_pull;
+	char								arr[1024];
+	int									new_socket;
+	std::list<Client> 					clients;
+	std::map<int, ServerParam> 			servers;
+	fd_set 								readset;
+	fd_set 								writeset;
+	int									mx;
+	int									backlog;
+	Parser_conf							conf;
+	std::vector<Server *>				server_pull;
+	std::map<std::string, std::string>	errors;
 	// timeval 					timeout;
 
 	void handler(int fd);

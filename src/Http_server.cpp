@@ -24,9 +24,23 @@ int	Http_server::setServ(Parser_conf &conf)
 
 Http_server::Http_server(int backlog, const Parser_conf& conf): clients(), mx(0), backlog(backlog), conf(conf)
 {	
-	clear();
-	clear_set();
-	clients.clear();
+	std::ifstream	f(conf.get_error_page().c_str());
+	if (f.good())
+	{
+		std::vector<std::string> str((std::istream_iterator<std::string>(f)),
+								   std::istream_iterator<std::string>());
+		for (size_t i = 0; i < str.size() - 1; i++)
+		{
+			if ((str[i])[(str[i]).size() - 1] == ':')
+			{
+				errors.insert(str[i], str[i+1]);
+			}
+		}
+		clear();
+		clear_set();
+		clients.clear();
+	}
+	
 }
 
 void	Http_server::clear_set()

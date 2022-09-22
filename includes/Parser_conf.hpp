@@ -31,7 +31,7 @@ class Parser_conf
 		ServerParam 	*getServers();
 		size_t 			get_servsize() const;
 		LocationData *	get_loc();
-
+		std::string		get_error_page() const;
 };
 
 #endif

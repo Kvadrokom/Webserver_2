@@ -4,6 +4,7 @@ Parser_conf::Parser_conf(const char* conf):servers(0), pars(), loc_size(0), serv
 											loc(NULL)
 {
 	std::ifstream 	f(conf);
+	int flag = 0;
 	
 	if (f.good())
 	{
@@ -12,7 +13,6 @@ Parser_conf::Parser_conf(const char* conf):servers(0), pars(), loc_size(0), serv
 		this->pars = parse;
 		for (unsigned long k = 0; k < pars.size(); k++)
 		{
-			int flag = 0;
 			if (pars[k] == "location")
 				loc_size++;
 			else if (pars[k] == "server")
@@ -22,11 +22,11 @@ Parser_conf::Parser_conf(const char* conf):servers(0), pars(), loc_size(0), serv
 				flag = 1;
 				error_page = pars[k + 1];
 			}
-			if (flag == 0)
-			{
-				std::cout << "Fatal: error page not present\n";
-				exit(1);
-			}
+		}
+		if (flag == 0)
+		{
+			std::cout << "Fatal: error page not present\n";
+			exit(1);
 		}
 		servers = new ServerParam[serv_size];
 		loc = new LocationData[loc_size];
@@ -105,3 +105,8 @@ size_t Parser_conf::get_locsize() const{ return loc_size; }
 size_t 		Parser_conf::get_servsize() const{ return serv_size; }
 
 LocationData *Parser_conf::get_loc() { return loc; }
+
+std::string		Parser_conf::get_error_page() const
+{
+	return error_page;
+}
