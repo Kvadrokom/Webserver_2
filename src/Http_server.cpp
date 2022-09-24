@@ -2,6 +2,16 @@
 #include "Request.hpp"
 #include "Responce.hpp"
 
+void	print(std::map<std::string, std::string> mp)
+{
+	std::map<std::string, std::string>::iterator it = mp.begin();
+	for ( ;it != mp.end(); ++it)
+	{
+		std::cout << "Key = " << it->first << " " << "Value = " << it->second << '\n';
+	}
+	
+}
+
 int	Http_server::setServ(Parser_conf &conf)
 {
 	if (conf.get_servsize())
@@ -27,15 +37,33 @@ Http_server::Http_server(int backlog, const Parser_conf& conf): clients(), mx(0)
 	std::ifstream	f(conf.get_error_page().c_str());
 	if (f.good())
 	{
+		std::string key, value;
 		std::vector<std::string> str((std::istream_iterator<std::string>(f)),
 								   std::istream_iterator<std::string>());
 		for (size_t i = 0; i < str.size() - 1; i++)
 		{
 			if ((str[i])[(str[i]).size() - 1] == ':')
 			{
-				errors.insert(str[i], str[i+1]);
+				key = str[i];
+				i++;
+				while ((str[i])[(str[i]).size() - 1] != ':' && i < str.size() - 1)
+				{
+					value += str[i];
+					if (i < str.size())
+					{
+						value += " ";
+					}
+					i++;
+				}
+				errors.insert(std::make_pair(key, value));
+				value = "";
+				if ((str[i])[(str[i]).size() - 1] == ':')
+					--i;
+				else if (i >= str.size())
+					break;
 			}
 		}
+		print(errors);
 		clear();
 		clear_set();
 		clients.clear();
@@ -115,7 +143,7 @@ void Http_server::launch()
 				it->req.recieve(it->arr, it->buffer);
 				if (it->req.state == CLIENT_RECEIVE_REQUEST)
 				{
-					it->answer.start(it->param, it->req);
+					it->answer.start(it->param, it->req, errors);
 					it->req.sendto = "";
 					std::cout << "Responce = " << it->answer.response_ << "\n\n";
 				}

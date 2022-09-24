@@ -1,60 +1,70 @@
 #include "Responce.hpp"
+#include <stdlib.h>
 
-std::string	responce_code(int state)
+
+std::string to_string(int num)
 {
-	std::string	content;
-
-	switch (state)
-	{
-	case BAD_REQUEST_400:
-		content =  "<h1>400 Bad Request</h1>";
-		break;
-	case NOT_FOUND_404:
-		content = "<h1>404 Not Found</h1>";
-		break;
-	case FORBIDDEN_403:
-		content = "<h1>403 Forbidden</h1>";
-		break;
-	case INTERNAL_SERVER_ERROR_500:
-		content = "<h1>500 INTERNAL SERVER ERROR</h1>";
-		break;
-	case OK_200_DEL:
-		content = "<h1>Succesfully delete file</h1>";
-		break;
-	case OK_200_POST:
-		content = "<h1>Succesfully post file</h1>";
-		break;
-	case REQUEST_ENTITY_TOO_LARGE_413:
-		content =  "<h1>413 Request Entity Too Large</h1>";
-		break;
-	case NOT_ALLOWED_405:
-		content =  "<h1>413 Method Not Allowed </h1>";
-		break;
-	default:
-		break;
-	}
-	return content;
+	std::ostringstream stream;
+	stream << num;
+	std::string converted = stream.str();
+	return converted;
 }
+// std::string	Responce::responce_answer(int state)
+// {
+// 	std::string	content;
+
+// 	switch (state)
+// 	{
+// 	case BAD_REQUEST_400:
+// 		content =  "<h1>400 Bad Request</h1>";
+// 		break;
+// 	case NOT_FOUND_404:
+// 		content = "<h1>404 Not Found</h1>";
+// 		break;
+// 	case FORBIDDEN_403:
+// 		content = "<h1>403 Forbidden</h1>";
+// 		break;
+// 	case INTERNAL_SERVER_ERROR_500:
+// 		content = "<h1>500 INTERNAL SERVER ERROR</h1>";
+// 		break;
+// 	case OK_200_DEL:
+// 		content = "<h1>Succesfully delete file</h1>";
+// 		break;
+// 	case OK_200_POST:
+// 		content = "<h1>Succesfully post file</h1>";
+// 		break;
+// 	case REQUEST_ENTITY_TOO_LARGE_413:
+// 		content =  "<h1>413 Request Entity Too Large</h1>";
+// 		break;
+// 	case NOT_ALLOWED_405:
+// 		content =  "<h1>413 Method Not Allowed </h1>";
+// 		break;
+// 	default:
+// 		break;
+// 	}
+// 	return content;
+// }
 
 
 Responce::Responce():head(""), body(""), responce_code(""),
 		content(""), response_(""), www(""), root(""), state(START), code_number(0) {};
 
-void	Responce::start(ServerParam &file, Request& req)
+void	Responce::start(ServerParam &file, Request& req,
+				std::map<std::string, std::string> errors)
 {
 	if (check_req(file, req))
 	{
 		if (req.method == "GET")
 		{
-			Responce_get(req);
+			Responce_get(req, errors);
 		}
 		else if (req.method == "POST")
 		{
-			Responce_post(req);
+			Responce_post(req, errors);
 		}
 		else if (req.method == "DELETE")
 		{
-			Responce_del(req);
+			Responce_del(req, errors);
 		}
 		return;
 	}
@@ -63,12 +73,12 @@ void	Responce::start(ServerParam &file, Request& req)
 		code_number = 405;
 		req.status = NOT_ALLOWED_405;
 	}
-	bad_request(req);	
+	bad_request(req, errors);	
 }
 
-void	Responce::bad_request(Request& req)
+void	Responce::bad_request(Request& req, std::map<std::string, std::string> errors)
 {	
-	content = ::responce_code(req.status);
+	content = errors[to_string(req.status) + ":"];
 	state = READY;	
 	make_answer();
 }
@@ -141,7 +151,8 @@ int	Responce::check_req(ServerParam &file, Request& req)
 	return 0;
 }
 
-void	Responce::Responce_get(Request& req)
+void	Responce::Responce_get(Request& req,
+						std::map <std::string, std::string> errors)
 {
 	// std::stringstream response; // сюда будет записываться ответ клиенту
 	// code_number = 404;
@@ -162,33 +173,33 @@ void	Responce::Responce_get(Request& req)
 	else
 	{
 		req.status = NOT_FOUND_404;
-		content = ::responce_code(req.status);
+		content = errors[to_string(req.status) + ":"];
 		code_number = 404;
 	}
 	state = READY;
 	make_answer();
 }
 
-void	Responce::Responce_del(Request& req)
+void	Responce::Responce_del(Request& req, std::map <std::string, std::string> errors)
 {
 	www = "www" + root;
 	if (std::remove(www.c_str()))
 	{
 		req.status = BAD_REQUEST_400;
 		code_number = 400;
-		content = ::responce_code(req.status);
+		content = errors[to_string(req.status) + ":"];
 	}
 	else
 	{
-		req.status = OK_200_DEL;
+		// req.status = 200;
 		code_number = 200;
-		content = ::responce_code(req.status);
+		content = "<h1>Succesfully delete file</h1>";
 	}		
 	state = READY;
 	make_answer();
 }
 
-void	Responce::Responce_post(Request& req)
+void	Responce::Responce_post(Request& req, std::map <std::string, std::string> errors)
 {
 	std::string file = req.chunked_body + req.body;
 	www =  "www" + root;
@@ -196,14 +207,14 @@ void	Responce::Responce_post(Request& req)
 	if (out.good())
 	{
 		out << file;
-		req.status = OK_200_POST;
-		content = ::responce_code(req.status);
+		// req.status = 200;
+		content = "<h1>Succesfully post file</h1>";
 		code_number = 200;
 	}
 	else
 	{
 		req.status = NOT_FOUND_404;
-		content = ::responce_code(req.status);
+		content = errors[to_string(req.status) + ":"];
 		code_number = 404;
 	}		
 	state = READY;

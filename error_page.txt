@@ -1,8 +1,7 @@
-BAD_REQUEST_400: 						<h1>400 Bad Request</h1>
-NOT_FOUND_404: 				 			<h1>404 Not Found</h1>
-FORBIDDEN_403:							<h1>403 Forbidden</h1>
-INTERNAL_SERVER_ERROR_500:				<h1>500 INTERNAL SERVER ERROR</h1>
-OK_200_DEL:								<h1>Succesfully delete file</h1>
-OK_200_POST:							<h1>Succesfully post file</h1>
-REQUEST_ENTITY_TOO_LARGE_413:			<h1>413 Request Entity Too Large</h1>
-NOT_ALLOWED_405:						<h1>413 Method Not Allowed </h1>
+1:				<h1>400 Bad Request</h1>
+2:				<h1>404 Not Found</h1>
+3:				<h1>403 Forbidden</h1>
+4:				<h1>413 Method Not Allowed </h1>
+5:				<h1>REQUEST_ENTITY_TOO_LARGE_413</h1>
+6:				<h1>500 INTERNAL SERVER ERROR</h1>
+	

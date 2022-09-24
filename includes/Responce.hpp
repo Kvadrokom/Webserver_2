@@ -7,6 +7,7 @@
 #include <fstream>
 #include <sstream>
 #include <cstdlib>
+#include <string>
 #include "Request.hpp"
 #include <iostream>
 #include "ServerParam.hpp"
@@ -35,14 +36,16 @@ struct Responce
 
 	Responce();	
 
-	void 	start(ServerParam &file, Request& req);
-	int		check_req(ServerParam &file, Request& req);
-	void	Responce_get(Request& req);
-	void	Responce_post(Request& req);
-	void	Responce_del(Request& req);
-	int		check_entity(ServerParam &file, Request& req, int i);
-	void 	bad_request(Request& req);
-	void	make_answer();
+	void 		start(ServerParam &file, Request& req,
+					std::map<std::string, std::string> errors);
+	int			check_req(ServerParam &file, Request& req);
+	void		Responce_get(Request& req, std::map <std::string, std::string> errors);
+	void		Responce_post(Request& req, std::map <std::string, std::string> errors);
+	void		Responce_del(Request& req, std::map <std::string, std::string> errors);
+	int			check_entity(ServerParam &file, Request& req, int i);
+	void 		bad_request(Request& req, std::map <std::string, std::string> errors);
+	void		make_answer();
+	std::string	responce_answer(int state);
 	void	init();
 };
 
