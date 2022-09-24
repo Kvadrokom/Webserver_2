@@ -46,7 +46,7 @@ Http_server::Http_server(int backlog, const Parser_conf& conf): clients(), mx(0)
 			{
 				key = str[i];
 				i++;
-				while ((str[i])[(str[i]).size() - 1] != ':' && i < str.size() - 1)
+				while (i < str.size() && (str[i])[(str[i]).size() - 1] != ':')
 				{
 					value += str[i];
 					if (i < str.size())
@@ -57,7 +57,7 @@ Http_server::Http_server(int backlog, const Parser_conf& conf): clients(), mx(0)
 				}
 				errors.insert(std::make_pair(key, value));
 				value = "";
-				if ((str[i])[(str[i]).size() - 1] == ':')
+				if (i < str.size() && (str[i])[(str[i]).size() - 1] == ':')
 					--i;
 				else if (i >= str.size())
 					break;
